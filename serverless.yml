@@ -1,0 +1,85 @@
+service: boston-archery-api
+
+custom:
+  archeryTagTableName: ArcheryTag
+  serverless-offline:
+    useDocker: true
+    reloadHandler: true
+  serverless-dynamodb:
+    stages:
+      - dev
+    start:
+      docker: true
+      port: 4569
+      inMemory: true
+      migrate: true
+      convertEmptyValues: true
+  go-build:
+    awsbuildPrefix: 'GOOS=linux CGO_ENABLED=0 '
+    useBinPathForHandler: true
+
+provider:
+  name: aws
+  runtime: go1.x
+  region: us-east-1
+  environment:
+    ARCHERY_TABLE_NAME: ${self:custom.archeryTagTableName}
+  iamRoleStatements: []
+
+package:
+  individually: true
+
+functions:
+  seasons:
+    handler: bin/handlers/seasons/main
+    events:
+      - http:
+          path: seasons
+          method: '*'
+
+
+resources:
+  Resources:
+    ArcheryTag:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.archeryTagTableName}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+          - AttributeName: EntityType
+            AttributeType: S
+          - AttributeName: GSI1PK
+            AttributeType: S
+          - AttributeName: GSI1SK
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: EntityTypeGSI
+            KeySchema:
+              - AttributeName: EntityType
+                KeyType: HASH
+              - AttributeName: PK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: GSI1
+            KeySchema:
+              - AttributeName: GSI1PK
+                KeyType: HASH
+              - AttributeName: GSI1SK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+plugins:
+  - serverless-go-build-extended
+  - serverless-dynamodb
+  - serverless-offline  # must be loaded after

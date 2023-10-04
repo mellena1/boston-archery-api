@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "build": "sls build",
+    "start": "npm run build && sls offline start"
+  },
+  "devDependencies": {
+    "serverless": "^3.35.2",
+    "serverless-dynamodb": "^0.2.43",
+    "serverless-go-build-extended": "^0.1.3",
+    "serverless-offline": "^12.0.4"
+  }
+}
