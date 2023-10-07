@@ -21,15 +21,15 @@ type PostSeasonInput struct {
 	ByeWeeks  []handlers.Date `json:"byeWeeks"`
 }
 
-func PostSeason(c *gin.Context) {
+func (a *API) PostSeason(c *gin.Context) {
 	var input PostSeasonInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		logger.Debug("bad request", "error", err)
+		a.logger.Debug("bad request", "error", err)
 		c.JSON(http.StatusBadRequest, handlers.BadRequestError)
 		return
 	}
 
-	err := database.AddSeason(c.Request.Context(), db.SeasonInput{
+	err := a.db.AddSeason(c.Request.Context(), db.SeasonInput{
 		Name:      input.Name,
 		StartDate: input.StartDate.ToTime(),
 		EndDate:   input.EndDate.ToTime(),
@@ -38,7 +38,7 @@ func PostSeason(c *gin.Context) {
 		}),
 	})
 	if err != nil {
-		logger.Error("failed to add season to db", "error", err)
+		a.logger.Error("failed to add season to db", "error", err)
 		c.JSON(http.StatusInternalServerError, failedToAddSeasonError)
 		return
 	}

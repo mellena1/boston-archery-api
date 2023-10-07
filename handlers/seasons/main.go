@@ -15,28 +15,41 @@ import (
 
 var (
 	ginLambda *ginadapter.GinLambda
-	logger    *slog.Logger = logging.NewLogger(slog.LevelDebug)
-	database  *db.DB
 )
 
+type SeasonDB interface {
+	AddSeason(ctx context.Context, newSeason db.SeasonInput) error
+	GetAllSeasons(ctx context.Context) ([]db.Season, error)
+}
+
+type API struct {
+	logger *slog.Logger
+	db     SeasonDB
+}
+
 func init() {
+	logger := logging.NewLogger(slog.LevelDebug)
+	logger.Info("Gin cold start")
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	dynamoClient, err := db.CreateLocalClient(ctx)
+	database, err := handlers.NewDB(ctx)
 	if err != nil {
-		logger.Error("failed to create dynamo client", "error", err)
+		logger.Error("failed to create database", "error", err)
 		panic(err)
 	}
 
-	database = db.NewDB("ArcheryTag", "EntityTypeGSI", dynamoClient)
+	api := API{
+		logger: logger,
+		db:     database,
+	}
 
-	logger.Info("Gin cold start")
 	r := handlers.NewGin(logger)
-	group := r.Group("/seasons")
+	group := r.Group("/api/v1/seasons")
 	{
-		group.GET("", GetSeasons)
-		group.POST("", PostSeason)
+		group.GET("", api.GetSeasons)
+		group.POST("", api.PostSeason)
 	}
 
 	ginLambda = ginadapter.New(r)

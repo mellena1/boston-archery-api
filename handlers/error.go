@@ -7,3 +7,7 @@ type Error struct {
 var BadRequestError = Error{
 	Msg: "bad request",
 }
+
+var UnauthorizedError = Error{
+	Msg: "unauthorized",
+}

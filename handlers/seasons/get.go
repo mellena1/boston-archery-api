@@ -11,10 +11,10 @@ var failedToFetchSeasonsError = handlers.Error{
 	Msg: "failed to fetch seasons",
 }
 
-func GetSeasons(c *gin.Context) {
-	seasons, err := database.GetAllSeasons(c.Request.Context())
+func (a *API) GetSeasons(c *gin.Context) {
+	seasons, err := a.db.GetAllSeasons(c.Request.Context())
 	if err != nil {
-		logger.Error("failed to get seasons", "error", err)
+		a.logger.Error("failed to get seasons", "error", err)
 		c.JSON(http.StatusInternalServerError, failedToFetchSeasonsError)
 		return
 	}

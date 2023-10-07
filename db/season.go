@@ -11,16 +11,17 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/google/uuid"
 	"github.com/mellena1/boston-archery-api/db/tablekeys"
-	"github.com/mellena1/boston-archery-api/models"
 	"github.com/mellena1/boston-archery-api/slices"
 )
 
 const seasonEntityType = "Season"
 
-type SeasonService interface {
-	AddSeason(ctx context.Context, newSeason SeasonInput) error
-	GetSeason(ctx context.Context, uuid uuid.UUID) (*models.Season, error)
-	GetAllSeasons(ctx context.Context) ([]models.Season, error)
+type Season struct {
+	UUID      uuid.UUID
+	Name      string
+	StartDate time.Time
+	EndDate   time.Time
+	ByeWeeks  []time.Time
 }
 
 type seasonDynamoItem struct {
@@ -33,8 +34,8 @@ type seasonDynamoItem struct {
 	ByeWeeks   []string
 }
 
-func (s seasonDynamoItem) toSeason() models.Season {
-	return models.Season{
+func (s seasonDynamoItem) toSeason() Season {
+	return Season{
 		UUID:      uuid.MustParse(strings.Split(s.SK, "#")[1]),
 		Name:      s.Name,
 		StartDate: stringToDate(s.StartDate),
@@ -79,7 +80,7 @@ func (db *DB) AddSeason(ctx context.Context, newSeason SeasonInput) error {
 	return err
 }
 
-func (db *DB) GetSeason(ctx context.Context, uuid uuid.UUID) (*models.Season, error) {
+func (db *DB) GetSeason(ctx context.Context, uuid uuid.UUID) (*Season, error) {
 	key := seasonPK(uuid)
 	resp, err := db.dynamoClient.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: &db.tableName,
@@ -102,7 +103,7 @@ func (db *DB) GetSeason(ctx context.Context, uuid uuid.UUID) (*models.Season, er
 	return &season, err
 }
 
-func (db *DB) GetAllSeasons(ctx context.Context) ([]models.Season, error) {
+func (db *DB) GetAllSeasons(ctx context.Context) ([]Season, error) {
 	keyCond := expression.Key(tablekeys.ENTITY_TYPE).Equal(expression.Value(seasonEntityType))
 	expr, err := expression.NewBuilder().WithKeyCondition(keyCond).Build()
 	if err != nil {
@@ -123,7 +124,7 @@ func (db *DB) GetAllSeasons(ctx context.Context) ([]models.Season, error) {
 	var seasonItems []seasonDynamoItem
 	err = attributevalue.UnmarshalListOfMaps(resp.Items, &seasonItems)
 
-	seasons := []models.Season{}
+	seasons := []Season{}
 	for _, item := range seasonItems {
 		seasons = append(seasons, item.toSeason())
 	}
