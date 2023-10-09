@@ -8,21 +8,31 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/gin-gonic/gin"
 	"github.com/mellena1/boston-archery-api/db"
-	"github.com/mellena1/boston-archery-api/logging"
+	"github.com/mellena1/boston-archery-api/handlers/middleware"
 )
 
 func NewGin(logger *slog.Logger) *gin.Engine {
+	if !IsLocal() {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	engine := gin.New()
 
-	engine.Use(logging.GinMiddlewareLogger(logger), gin.Recovery())
+	engine.Use(middleware.LoggingMiddleware(logger), gin.Recovery())
 
 	return engine
 }
 
 func NewDB(ctx context.Context) (*db.DB, error) {
-	dynamoClient, err := db.CreateLocalClient(ctx)
+	var dynamoClient *dynamodb.Client
+	var err error
+	if IsLocal() {
+		dynamoClient, err = db.CreateLocalClient(ctx)
+	} else {
+		dynamoClient, err = db.CreateProdClient(ctx)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to create dynamo client: %w", err)
 	}
@@ -32,7 +42,7 @@ func NewDB(ctx context.Context) (*db.DB, error) {
 }
 
 func IsLocal() bool {
-	isOffline := os.Getenv("IS_OFFLINE")
+	isOffline := os.Getenv("AWS_SAM_LOCAL")
 	return isOffline == "true"
 }
 

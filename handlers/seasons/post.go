@@ -7,10 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mellena1/boston-archery-api/db"
 	"github.com/mellena1/boston-archery-api/handlers"
+	"github.com/mellena1/boston-archery-api/handlers/errors"
 	"github.com/mellena1/boston-archery-api/slices"
 )
 
-var failedToAddSeasonError = handlers.Error{
+var failedToAddSeasonError = errors.Error{
 	Msg: "failed to add season",
 }
 
@@ -25,7 +26,7 @@ func (a *API) PostSeason(c *gin.Context) {
 	var input PostSeasonInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		a.logger.Debug("bad request", "error", err)
-		c.JSON(http.StatusBadRequest, handlers.BadRequestError)
+		c.AbortWithStatusJSON(http.StatusBadRequest, errors.BadRequestError)
 		return
 	}
 
@@ -39,7 +40,7 @@ func (a *API) PostSeason(c *gin.Context) {
 	})
 	if err != nil {
 		a.logger.Error("failed to add season to db", "error", err)
-		c.JSON(http.StatusInternalServerError, failedToAddSeasonError)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, failedToAddSeasonError)
 		return
 	}
 

@@ -30,7 +30,7 @@ func NewDB(tableName string, entityTypeIndexName string, dynamoClient DynamoDBCl
 }
 
 func CreateLocalClient(ctx context.Context) (*dynamodb.Client, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
+	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion("localhost"),
 		config.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
 			func(service, region string, options ...interface{}) (aws.Endpoint, error) {
@@ -47,6 +47,13 @@ func CreateLocalClient(ctx context.Context) (*dynamodb.Client, error) {
 		return nil, err
 	}
 
-	c := dynamodb.NewFromConfig(cfg)
-	return c, nil
+	return dynamodb.NewFromConfig(cfg), nil
+}
+
+func CreateProdClient(ctx context.Context) (*dynamodb.Client, error) {
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return dynamodb.NewFromConfig(cfg), nil
 }

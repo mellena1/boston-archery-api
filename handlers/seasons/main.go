@@ -8,8 +8,10 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
+	"github.com/mellena1/boston-archery-api/auth"
 	"github.com/mellena1/boston-archery-api/db"
 	"github.com/mellena1/boston-archery-api/handlers"
+	"github.com/mellena1/boston-archery-api/handlers/middleware"
 	"github.com/mellena1/boston-archery-api/logging"
 )
 
@@ -23,8 +25,9 @@ type SeasonDB interface {
 }
 
 type API struct {
-	logger *slog.Logger
-	db     SeasonDB
+	logger    *slog.Logger
+	db        SeasonDB
+	jwtParser middleware.JWTParser
 }
 
 func init() {
@@ -34,6 +37,12 @@ func init() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
+	appVars, err := handlers.GetAppVars()
+	if err != nil {
+		logger.Error("failed to get app vars", "error", err)
+		panic(err)
+	}
+
 	database, err := handlers.NewDB(ctx)
 	if err != nil {
 		logger.Error("failed to create database", "error", err)
@@ -41,15 +50,20 @@ func init() {
 	}
 
 	api := API{
-		logger: logger,
-		db:     database,
+		logger:    logger,
+		db:        database,
+		jwtParser: auth.NewJWTService(appVars.JWTKey),
 	}
 
 	r := handlers.NewGin(logger)
 	group := r.Group("/api/v1/seasons")
 	{
 		group.GET("", api.GetSeasons)
-		group.POST("", api.PostSeason)
+
+		adminGroup := group.Group("", middleware.ParseJWTMiddleware(api.jwtParser), middleware.MustBeAdminMiddleware())
+		{
+			adminGroup.POST("", api.PostSeason)
+		}
 	}
 
 	ginLambda = ginadapter.New(r)

@@ -1,4 +1,4 @@
-package handlers
+package errors
 
 type Error struct {
 	Msg string
