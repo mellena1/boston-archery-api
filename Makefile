@@ -4,7 +4,11 @@ build:
 
 .PHONY: local
 local: build
-	sam local start-api --env-vars .env.local.json
+	docker-compose up -d
+	sam local start-api --env-vars .env.local.json --docker-network boston-archery
+
+deploy: build
+	sam deploy
 
 .PHONY: build-SeasonsFunction
 build-SeasonsFunction:

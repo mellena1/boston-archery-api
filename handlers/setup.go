@@ -8,6 +8,9 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/gin-gonic/gin"
 	"github.com/mellena1/boston-archery-api/db"
@@ -29,9 +32,9 @@ func NewDB(ctx context.Context) (*db.DB, error) {
 	var dynamoClient *dynamodb.Client
 	var err error
 	if IsLocal() {
-		dynamoClient, err = db.CreateLocalClient(ctx)
+		dynamoClient, err = createLocalDynamoClient(ctx)
 	} else {
-		dynamoClient, err = db.CreateProdClient(ctx)
+		dynamoClient, err = createProdDynamoClient(ctx)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to create dynamo client: %w", err)
@@ -78,4 +81,33 @@ func GetAppVars() (AppVars, error) {
 	}
 	// TODO: get prod secrets
 	return AppVars{}, nil
+}
+
+func createLocalDynamoClient(ctx context.Context) (*dynamodb.Client, error) {
+	cfg, err := config.LoadDefaultConfig(ctx,
+		config.WithRegion("localhost"),
+		config.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
+			func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+				return aws.Endpoint{URL: "http://dynamodb:8000"}, nil
+			})),
+		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
+			Value: aws.Credentials{
+				AccessKeyID: "local", SecretAccessKey: "local", SessionToken: "",
+				Source: "Mock credentials used above for local instance",
+			},
+		}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return dynamodb.NewFromConfig(cfg), nil
+}
+
+func createProdDynamoClient(ctx context.Context) (*dynamodb.Client, error) {
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return dynamodb.NewFromConfig(cfg), nil
 }

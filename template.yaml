@@ -3,6 +3,11 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   boston-archery-api
 
+Mappings:
+  attributes:
+    dynamo:
+      tableName: ArcheryTag
+
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
@@ -11,13 +16,13 @@ Globals:
     MemorySize: 128
     Environment:
       Variables:
-        ARCHERY_TABLE_NAME: ArcheryTag
+        ARCHERY_TABLE_NAME: !FindInMap [attributes, dynamo, tableName]
         # need to specify these for local dev or they don't get picked up
-        WEB_HOST:
-        API_HOST:
-        DISCORD_CLIENT_ID:
-        DISCORD_CLIENT_SECRET:
-        JWT_KEY:
+        WEB_HOST: ''
+        API_HOST: ''
+        DISCORD_CLIENT_ID: ''
+        DISCORD_CLIENT_SECRET: ''
+        JWT_KEY: ''
 
 Resources:
   SeasonsFunction:
@@ -31,6 +36,9 @@ Resources:
       Architectures:
         - arm64
       ReservedConcurrentExecutions: 5
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [attributes, dynamo, tableName]
       Events:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -54,3 +62,43 @@ Resources:
           Properties:
             Path: /auth/{proxy+}
             Method: any
+  ArcheryTagTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: !FindInMap [attributes, dynamo, tableName]
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: true
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+          - AttributeName: EntityType
+            AttributeType: S
+          - AttributeName: GSI1PK
+            AttributeType: S
+          - AttributeName: GSI1SK
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: EntityTypeGSI
+            KeySchema:
+              - AttributeName: EntityType
+                KeyType: HASH
+              - AttributeName: PK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: GSI1
+            KeySchema:
+              - AttributeName: GSI1PK
+                KeyType: HASH
+              - AttributeName: GSI1SK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
