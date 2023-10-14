@@ -18,15 +18,26 @@ func NewJWTService(key []byte) *JWTService {
 }
 
 type JWTClaims struct {
-	Nickname string `json:"nickname"`
-	IsAdmin  bool   `json:"isAdmin"`
+	Username   string `json:"username"`
+	Nickname   string `json:"nickname"`
+	AvatarHash string `json:"avatarHash"`
+	IsAdmin    bool   `json:"isAdmin"`
 	jwt.RegisteredClaims
 }
 
-func (j *JWTService) CreateJWT(nickname string, isAdmin bool, ttl time.Duration) (string, error) {
+type UserInfo struct {
+	Nickname   string
+	IsAdmin    bool
+	AvatarHash string
+	Username   string
+}
+
+func (j *JWTService) CreateJWT(userInfo UserInfo, ttl time.Duration) (string, error) {
 	token := jwt.NewWithClaims(signingMethod, JWTClaims{
-		Nickname: nickname,
-		IsAdmin:  isAdmin,
+		Nickname:   userInfo.Nickname,
+		IsAdmin:    userInfo.IsAdmin,
+		Username:   userInfo.Username,
+		AvatarHash: userInfo.AvatarHash,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(ttl)),

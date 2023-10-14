@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mellena1/boston-archery-api/auth"
 	"github.com/mellena1/boston-archery-api/handlers/errors"
 )
 
@@ -23,9 +24,15 @@ const (
 var failedToGetTokenError = errors.Error{Msg: "failed to get token"}
 var invalidStateError = errors.Error{Msg: "invalid state"}
 
+type discordUser struct {
+	Username string `json:"username"`
+	Avatar   string `json:"avatar"`
+}
+
 type discordGuildMemberResp struct {
-	Nickname string   `json:"nick"`
-	Roles    []string `json:"roles"`
+	User     discordUser `json:"user"`
+	Nickname string      `json:"nick"`
+	Roles    []string    `json:"roles"`
 }
 
 func (a *API) Callback(c *gin.Context) {
@@ -67,13 +74,20 @@ func (a *API) Callback(c *gin.Context) {
 	}
 
 	// TODO: figure out what id to actually use
-	jwt, err := a.jwtService.CreateJWT(memberInfo.Nickname, slices.Contains(memberInfo.Roles, noStringsID), jwtTTL)
+	jwt, err := a.jwtService.CreateJWT(auth.UserInfo{
+		Nickname:   memberInfo.Nickname,
+		IsAdmin:    slices.Contains(memberInfo.Roles, noStringsID),
+		AvatarHash: memberInfo.User.Avatar,
+		Username:   memberInfo.User.Username,
+	}, jwtTTL)
 	if err != nil {
 		a.logger.Error("failed to make jwt", "error", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, failedToGetTokenError)
 		return
 	}
 
-	redirectURL := fmt.Sprintf("%s?authToken=%s", a.appVars.WebHost, jwt)
+	fmt.Printf("%+v\n", memberInfo)
+
+	redirectURL := fmt.Sprintf("%s/login?authToken=%s", a.appVars.WebHost, jwt)
 	c.Redirect(http.StatusTemporaryRedirect, redirectURL)
 }

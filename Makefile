@@ -4,6 +4,7 @@ build:
 
 .PHONY: local
 local: build
+	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 	docker-compose up -d
 	sam local start-api --env-vars .env.local.json --docker-network boston-archery
 
