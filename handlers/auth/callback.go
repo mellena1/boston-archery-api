@@ -25,6 +25,7 @@ var failedToGetTokenError = errors.Error{Msg: "failed to get token"}
 var invalidStateError = errors.Error{Msg: "invalid state"}
 
 type discordUser struct {
+	ID       string `json:"id"`
 	Username string `json:"username"`
 	Avatar   string `json:"avatar"`
 }
@@ -79,6 +80,7 @@ func (a *API) Callback(c *gin.Context) {
 		IsAdmin:    slices.Contains(memberInfo.Roles, noStringsID),
 		AvatarHash: memberInfo.User.Avatar,
 		Username:   memberInfo.User.Username,
+		UserID:     memberInfo.User.ID,
 	}, jwtTTL)
 	if err != nil {
 		a.logger.Error("failed to make jwt", "error", err)

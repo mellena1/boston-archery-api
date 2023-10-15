@@ -18,6 +18,7 @@ func NewJWTService(key []byte) *JWTService {
 }
 
 type JWTClaims struct {
+	UserID     string `json:"userID"`
 	Username   string `json:"username"`
 	Nickname   string `json:"nickname"`
 	AvatarHash string `json:"avatarHash"`
@@ -30,6 +31,7 @@ type UserInfo struct {
 	IsAdmin    bool
 	AvatarHash string
 	Username   string
+	UserID     string
 }
 
 func (j *JWTService) CreateJWT(userInfo UserInfo, ttl time.Duration) (string, error) {
@@ -38,6 +40,7 @@ func (j *JWTService) CreateJWT(userInfo UserInfo, ttl time.Duration) (string, er
 		IsAdmin:    userInfo.IsAdmin,
 		Username:   userInfo.Username,
 		AvatarHash: userInfo.AvatarHash,
+		UserID:     userInfo.UserID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(ttl)),
