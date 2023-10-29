@@ -1,3 +1,18 @@
+// Package classification Boston Archery API
+//
+// API for Boston Archery
+// Version: 1.0.0
+// Schemes: http
+// Host: localhost:3000
+// BasePath: /api/v1
+//
+// Consumes:
+//   - application/json
+//
+// Produces:
+//   - application/json
+//
+// swagger:meta
 package main
 
 import (
@@ -20,8 +35,9 @@ var (
 )
 
 type SeasonDB interface {
-	AddSeason(ctx context.Context, newSeason db.SeasonInput) error
+	AddSeason(ctx context.Context, newSeason db.SeasonInput) (*db.Season, error)
 	GetAllSeasons(ctx context.Context) ([]db.Season, error)
+	GetSeasonByName(ctx context.Context, name string) (*db.Season, error)
 }
 
 type API struct {

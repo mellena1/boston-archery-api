@@ -1,0 +1,172 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "API for Boston Archery",
+    "title": "Boston Archery API",
+    "version": "1.0.0"
+  },
+  "host": "localhost:3000",
+  "basePath": "/api/v1",
+  "paths": {
+    "/season": {
+      "post": {
+        "tags": [
+          "seasons"
+        ],
+        "summary": "Add a new season.",
+        "operationId": "postSeason",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "name",
+                "startDate",
+                "endDate"
+              ],
+              "properties": {
+                "byeWeeks": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "x-go-name": "ByeWeeks"
+                },
+                "endDate": {
+                  "type": "string",
+                  "format": "date",
+                  "x-go-name": "EndDate"
+                },
+                "name": {
+                  "type": "string",
+                  "x-go-name": "Name"
+                },
+                "startDate": {
+                  "type": "string",
+                  "format": "date",
+                  "x-go-name": "StartDate"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PostSeasonResp",
+            "schema": {
+              "$ref": "#/definitions/PostSeasonResp"
+            }
+          },
+          "400": {
+            "$ref": "#/responses/Error"
+          },
+          "500": {
+            "$ref": "#/responses/Error"
+          }
+        }
+      }
+    },
+    "/seasons": {
+      "get": {
+        "tags": [
+          "seasons"
+        ],
+        "summary": "Get all seasons.",
+        "operationId": "getSeasons",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "Name",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "GetSeasonsResp",
+            "schema": {
+              "$ref": "#/definitions/GetSeasonsResp"
+            }
+          },
+          "500": {
+            "$ref": "#/responses/Error"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "GetSeasonsResp": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Season"
+          },
+          "x-go-name": "Data"
+        }
+      },
+      "x-go-package": "github.com/mellena1/boston-archery-api/handlers/seasons"
+    },
+    "PostSeasonResp": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/Season"
+        }
+      },
+      "x-go-package": "github.com/mellena1/boston-archery-api/handlers/seasons"
+    },
+    "Season": {
+      "type": "object",
+      "properties": {
+        "byeWeeks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "ByeWeeks"
+        },
+        "endDate": {
+          "type": "string",
+          "x-go-name": "EndDate"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "startDate": {
+          "type": "string",
+          "x-go-name": "StartDate"
+        }
+      },
+      "x-go-package": "github.com/mellena1/boston-archery-api/handlers/seasons"
+    }
+  },
+  "responses": {
+    "Error": {
+      "description": "",
+      "headers": {
+        "Msg": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

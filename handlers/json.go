@@ -6,6 +6,7 @@ import (
 )
 
 // Date is a type that will unmarhsal to a time.Time in the format of "2006-01-02"
+// swagger:strfmt date
 type Date time.Time
 
 var _ json.Unmarshaler = &Date{}
