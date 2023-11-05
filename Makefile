@@ -27,3 +27,7 @@ swagger:
 .PHONY: swagger-serve
 swagger-serve: swagger
 	swagger serve -F swagger docs/swagger.json
+
+.PHONY: test
+test:
+	go test ./...
