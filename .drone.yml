@@ -4,7 +4,7 @@ name: default
 
 steps:
 - name: install
-  image: amazon/aws-sam-cli-build-image-go1.x
+  image: golang:1.21
   volumes:
     - name: deps
       path: /go
@@ -12,20 +12,12 @@ steps:
   - go mod download
 
 - name: test
-  image: amazon/aws-sam-cli-build-image-go1.x
+  image: golang:1.21
   volumes:
     - name: deps
       path: /go
   commands:
   - make test
-
-- name: build
-  image: amazon/aws-sam-cli-build-image-go1.x
-  volumes:
-    - name: deps
-      path: /go
-  commands:
-  - make build
 
 volumes:
 - name: deps
