@@ -4,7 +4,7 @@ name: default
 
 steps:
 - name: install
-  image: amazon/aws-sam-cli-emulation-image-go1.x
+  image: amazon/aws-sam-cli-build-image-go1.x
   volumes:
     - name: deps
       path: /go
@@ -12,7 +12,7 @@ steps:
   - go mod download
 
 - name: test
-  image: amazon/aws-sam-cli-emulation-image-go1.x
+  image: amazon/aws-sam-cli-build-image-go1.x
   volumes:
     - name: deps
       path: /go
@@ -20,7 +20,7 @@ steps:
   - make test
 
 - name: build
-  image: amazon/aws-sam-cli-emulation-image-go1.x
+  image: amazon/aws-sam-cli-build-image-go1.x
   volumes:
     - name: deps
       path: /go
