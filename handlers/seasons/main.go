@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
+	"github.com/gin-contrib/cors"
 	"github.com/mellena1/boston-archery-api/auth"
 	"github.com/mellena1/boston-archery-api/db"
 	"github.com/mellena1/boston-archery-api/handlers"
@@ -72,6 +73,11 @@ func init() {
 	}
 
 	r := handlers.NewGin(logger)
+	r.Use(cors.New(cors.Config{
+		// TODO: make configurable for prod
+		AllowOrigins:  []string{"http://localhost:*"},
+		AllowWildcard: true,
+	}))
 	group := r.Group("/api/v1/seasons")
 	{
 		group.GET("", api.GetSeasons)
