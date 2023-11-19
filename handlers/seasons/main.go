@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-contrib/cors"
+	"github.com/google/uuid"
 	"github.com/mellena1/boston-archery-api/auth"
 	"github.com/mellena1/boston-archery-api/db"
 	"github.com/mellena1/boston-archery-api/handlers"
@@ -39,6 +40,7 @@ type SeasonDB interface {
 	AddSeason(ctx context.Context, newSeason db.SeasonInput) (*db.Season, error)
 	GetAllSeasons(ctx context.Context) ([]db.Season, error)
 	GetSeasonByName(ctx context.Context, name string) (*db.Season, error)
+	UpdateSeason(ctx context.Context, id uuid.UUID, season db.SeasonInput) (*db.Season, error)
 }
 
 type API struct {
@@ -86,6 +88,7 @@ func init() {
 		adminGroup := group.Group("", middleware.ParseJWTMiddleware(api.jwtParser), middleware.MustBeAdminMiddleware())
 		{
 			adminGroup.POST("", api.PostSeason)
+			adminGroup.PUT("/:id", api.PutSeason)
 		}
 	}
 

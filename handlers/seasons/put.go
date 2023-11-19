@@ -2,23 +2,25 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/mellena1/boston-archery-api/db"
 	"github.com/mellena1/boston-archery-api/handlers"
 	handlerErrors "github.com/mellena1/boston-archery-api/handlers/errors"
 	"github.com/mellena1/boston-archery-api/slices"
 )
 
-var failedToAddSeasonError = handlerErrors.Error{
-	Msg: "failed to add season",
+var failedToUpdateSeasonError = handlerErrors.Error{
+	Msg: "failed to update season",
 }
 
-// swagger:parameters postSeason
-type PostSeasonInput struct {
+// swagger:parameters putSeason
+type PutSeasonInput struct {
+	// in:path
+	ID uuid.UUID
 	// in:body
 	Body struct {
 		// required: true
@@ -32,11 +34,11 @@ type PostSeasonInput struct {
 }
 
 // swagger:model PostSeasonResp
-type PostSeasonResp struct {
+type PutSeasonResp struct {
 	Data Season `json:"data"`
 }
 
-// swagger:route POST /seasons seasons postSeason
+// swagger:route PUT /seasons/{id} seasons putSeason
 //
 // Add a new season.
 //
@@ -45,8 +47,17 @@ type PostSeasonResp struct {
 //	200: body:PostSeasonResp
 //	400: body:Error
 //	500: body:Error
-func (a *API) PostSeason(c *gin.Context) {
-	var input PostSeasonInput
+func (a *API) PutSeason(c *gin.Context) {
+	var input PutSeasonInput
+
+	var err error
+	input.ID, err = uuid.Parse(c.Param("id"))
+	if err != nil {
+		a.logger.Error("invalid ID", "error", err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, handlerErrors.BadRequestError)
+		return
+	}
+
 	if err := c.ShouldBindJSON(&input.Body); err != nil {
 		a.logger.Error("failed to bind json", "error", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, handlerErrors.BadRequestError)
@@ -59,7 +70,7 @@ func (a *API) PostSeason(c *gin.Context) {
 		return
 	}
 
-	season, err := a.db.AddSeason(c.Request.Context(), db.SeasonInput{
+	season, err := a.db.UpdateSeason(c.Request.Context(), input.ID, db.SeasonInput{
 		Name:      input.Body.Name,
 		StartDate: input.Body.StartDate.ToTime(),
 		EndDate:   input.Body.EndDate.ToTime(),
@@ -69,11 +80,11 @@ func (a *API) PostSeason(c *gin.Context) {
 	})
 	if err != nil {
 		switch {
-		case errors.Is(err, db.ErrItemAlreadyExists):
-			c.AbortWithStatusJSON(http.StatusConflict, handlerErrors.AlreadyExistsError)
+		case errors.Is(err, db.ErrItemNotFound):
+			c.AbortWithStatusJSON(http.StatusNotFound, handlerErrors.NotFoundError)
 		default:
-			a.logger.Error("failed to add season to db", "error", err)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, failedToAddSeasonError)
+			a.logger.Error("failed to update season to db", "error", err, "id", input.ID)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failedToUpdateSeasonError)
 		}
 		return
 	}
@@ -81,15 +92,4 @@ func (a *API) PostSeason(c *gin.Context) {
 	c.JSON(http.StatusOK, PostSeasonResp{
 		Data: seasonFromDBModel(*season),
 	})
-}
-
-func validateByeWeeks(startDate, endDate time.Time, byeWeeks []handlers.Date) error {
-	for _, bye := range byeWeeks {
-		byeAsTime := bye.ToTime()
-		if startDate.After(byeAsTime) || endDate.Before(byeAsTime) {
-			return fmt.Errorf("bye week is not in season")
-		}
-	}
-
-	return nil
 }

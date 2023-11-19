@@ -17,7 +17,35 @@
   "host": "localhost:3000",
   "basePath": "/api/v1",
   "paths": {
-    "/season": {
+    "/seasons": {
+      "get": {
+        "tags": [
+          "seasons"
+        ],
+        "summary": "Get all seasons.",
+        "operationId": "getSeasons",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "Name",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "GetSeasonsResp",
+            "schema": {
+              "$ref": "#/definitions/GetSeasonsResp"
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "seasons"
@@ -84,25 +112,69 @@
         }
       }
     },
-    "/seasons": {
-      "get": {
+    "/seasons/{id}": {
+      "put": {
         "tags": [
           "seasons"
         ],
-        "summary": "Get all seasons.",
-        "operationId": "getSeasons",
+        "summary": "Add a new season.",
+        "operationId": "putSeason",
         "parameters": [
           {
             "type": "string",
-            "name": "Name",
-            "in": "query"
+            "format": "uuid",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "name",
+                "startDate",
+                "endDate"
+              ],
+              "properties": {
+                "byeWeeks": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "x-go-name": "ByeWeeks"
+                },
+                "endDate": {
+                  "type": "string",
+                  "format": "date",
+                  "x-go-name": "EndDate"
+                },
+                "name": {
+                  "type": "string",
+                  "x-go-name": "Name"
+                },
+                "startDate": {
+                  "type": "string",
+                  "format": "date",
+                  "x-go-name": "StartDate"
+                }
+              }
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "GetSeasonsResp",
+            "description": "PostSeasonResp",
             "schema": {
-              "$ref": "#/definitions/GetSeasonsResp"
+              "$ref": "#/definitions/PostSeasonResp"
+            }
+          },
+          "400": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           },
           "500": {
@@ -145,6 +217,7 @@
           "$ref": "#/definitions/Season"
         }
       },
+      "x-go-name": "PutSeasonResp",
       "x-go-package": "github.com/mellena1/boston-archery-api/handlers/seasons"
     },
     "Season": {

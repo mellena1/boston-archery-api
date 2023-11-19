@@ -103,12 +103,52 @@ func (db *DB) AddSeason(ctx context.Context, newSeason SeasonInput) (*Season, er
 	return &season, err
 }
 
+func (db *DB) UpdateSeason(ctx context.Context, id uuid.UUID, season SeasonInput) (*Season, error) {
+	_, err := db.GetSeason(ctx, id)
+	switch {
+	case errors.Is(err, ErrItemNotFound):
+		return nil, ErrItemNotFound
+	case err == nil:
+		// Item found means we do have an item with this ID already
+	default:
+		return nil, err
+	}
+
+	existingSeason, err := db.GetSeasonByName(ctx, season.Name)
+	switch {
+	case errors.Is(err, ErrItemNotFound):
+		// Item not found means we have no conflicts
+	case err == nil:
+		if existingSeason.UUID != id {
+			return nil, ErrItemAlreadyExists
+		}
+	default:
+		return nil, err
+	}
+
+	dynamoItem := season.toDynamoItem(id)
+	item, err := attributevalue.MarshalMap(dynamoItem)
+	if err != nil {
+		return nil, err
+	}
+	_, err = db.dynamoClient.PutItem(ctx, &dynamodb.PutItemInput{
+		TableName: &db.tableName,
+		Item:      item,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	updatedSeason := dynamoItem.toSeason()
+	return &updatedSeason, err
+}
+
 func (db *DB) GetSeason(ctx context.Context, uuid uuid.UUID) (*Season, error) {
 	key := seasonPK(uuid.String())
 	resp, err := db.dynamoClient.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: &db.tableName,
 		Key: map[string]types.AttributeValue{
-			tablekeys.PK: &types.AttributeValueMemberS{Value: tablekeys.SEASON_KEY_PREFIX},
+			tablekeys.PK: &types.AttributeValueMemberS{Value: key},
 			tablekeys.SK: &types.AttributeValueMemberS{Value: key},
 		},
 	})
