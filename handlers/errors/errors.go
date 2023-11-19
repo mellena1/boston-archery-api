@@ -1,6 +1,6 @@
 package errors
 
-// swagger:response Error
+// swagger:model Error
 type Error struct {
 	Msg string
 }

@@ -76,6 +76,7 @@ func init() {
 	r.Use(cors.New(cors.Config{
 		// TODO: make configurable for prod
 		AllowOrigins:  []string{"http://localhost:*"},
+		AllowHeaders:  []string{"Authorization", "Content-Type"},
 		AllowWildcard: true,
 	}))
 	group := r.Group("/api/v1/seasons")

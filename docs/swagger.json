@@ -70,10 +70,16 @@
             }
           },
           "400": {
-            "$ref": "#/responses/Error"
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           },
           "500": {
-            "$ref": "#/responses/Error"
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -100,13 +106,25 @@
             }
           },
           "500": {
-            "$ref": "#/responses/Error"
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
     }
   },
   "definitions": {
+    "Error": {
+      "type": "object",
+      "properties": {
+        "Msg": {
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/mellena1/boston-archery-api/handlers/errors"
+    },
     "GetSeasonsResp": {
       "type": "object",
       "properties": {
@@ -157,16 +175,6 @@
         }
       },
       "x-go-package": "github.com/mellena1/boston-archery-api/handlers/seasons"
-    }
-  },
-  "responses": {
-    "Error": {
-      "description": "",
-      "headers": {
-        "Msg": {
-          "type": "string"
-        }
-      }
     }
   }
 }

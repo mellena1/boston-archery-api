@@ -43,17 +43,18 @@ type PostSeasonResp struct {
 // responses:
 //
 //	200: body:PostSeasonResp
-//	400: Error
-//	500: Error
+//	400: body:Error
+//	500: body:Error
 func (a *API) PostSeason(c *gin.Context) {
 	var input PostSeasonInput
 	if err := c.ShouldBindJSON(&input.Body); err != nil {
-		fmt.Println(err)
+		a.logger.Error("failed to bind json", "error", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, handlerErrors.BadRequestError)
 		return
 	}
 
 	if err := validateByeWeeks(input.Body.StartDate.ToTime(), input.Body.EndDate.ToTime(), input.Body.ByeWeeks); err != nil {
+		a.logger.Error("failed to validate bye weeks", "error", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, handlerErrors.BadRequestError)
 		return
 	}
