@@ -22,7 +22,7 @@ func NewAPI(logger *slog.Logger, jwtService *auth.JWTService, appVars *handlers.
 		jwtService: jwtService,
 		appVars:    appVars,
 		oauthConf: &oauth2.Config{
-			RedirectURL:  fmt.Sprintf("%s/auth/callback", appVars.APIHost),
+			RedirectURL:  fmt.Sprintf("%s/api/v1/auth/callback", appVars.APIHost),
 			ClientID:     appVars.DiscordClientID,
 			ClientSecret: appVars.DiscordClientSecret,
 			Scopes:       []string{"guilds.members.read"},

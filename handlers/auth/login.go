@@ -24,5 +24,5 @@ func generateState() string {
 }
 
 func setStateCookie(c *gin.Context, val string, maxAge int) {
-	c.SetCookie(stateCookieKey, val, maxAge, "/auth", "", true, true)
+	c.SetCookie(stateCookieKey, val, maxAge, "/api/v1/auth", "", true, true)
 }

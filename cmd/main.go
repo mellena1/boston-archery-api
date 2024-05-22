@@ -108,7 +108,6 @@ func (api *API) addAuthAPIs(r *gin.Engine) {
 		group.GET("/login", authApi.Login)
 		group.GET("/callback", authApi.Callback)
 	}
-	r.GET("/login", authApi.Login)
 }
 
 func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
