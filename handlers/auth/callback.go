@@ -14,7 +14,6 @@ import (
 
 const (
 	captainRoleID      = "1031944371026800691"
-	noStringsID        = "1047314424928686271"
 	guildMemberInfoURL = "https://discord.com/api/users/@me/guilds/1031942797105823745/member"
 
 	jwtCookieKey = "authToken"
@@ -74,10 +73,10 @@ func (a *API) Callback(c *gin.Context) {
 		return
 	}
 
-	// TODO: figure out what id to actually use
 	jwt, err := a.jwtService.CreateJWT(auth.UserInfo{
-		Nickname:   memberInfo.Nickname,
-		IsAdmin:    slices.Contains(memberInfo.Roles, noStringsID),
+		Nickname: memberInfo.Nickname,
+		// TODO: figure out what id to actually use
+		IsAdmin:    slices.Contains(memberInfo.Roles, captainRoleID),
 		AvatarHash: memberInfo.User.Avatar,
 		Username:   memberInfo.User.Username,
 		UserID:     memberInfo.User.ID,
