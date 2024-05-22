@@ -25,13 +25,13 @@ Globals:
         JWT_KEY: ''
 
 Resources:
-  SeasonsFunction:
+  ApiFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Metadata:
       BuildMethod: makefile
     Properties:
       CodeUri: .
-      Handler: handlers.seasons.main
+      Handler: cmd.main
       Runtime: provided.al2
       Architectures:
         - arm64
@@ -44,23 +44,6 @@ Resources:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /api/v1/{proxy+}
-            Method: any
-  AuthFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Metadata:
-      BuildMethod: makefile
-    Properties:
-      CodeUri: .
-      Handler: handlers.auth.main
-      Runtime: provided.al2
-      Architectures:
-        - arm64
-      ReservedConcurrentExecutions: 5
-      Events:
-        CatchAll:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /auth/{proxy+}
             Method: any
   ArcheryTagTable:
       Type: AWS::DynamoDB::Table

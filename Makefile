@@ -12,13 +12,9 @@ local: build
 deploy: build
 	sam deploy
 
-.PHONY: build-SeasonsFunction
-build-SeasonsFunction:
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o $(ARTIFACTS_DIR)/bootstrap -ldflags="-s -w" handlers/seasons/*.go
-
-.PHONY: build-AuthFunction
-build-AuthFunction:
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o $(ARTIFACTS_DIR)/bootstrap -ldflags="-s -w" handlers/auth/*.go
+.PHONY: build-ApiFunction
+build-ApiFunction:
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o $(ARTIFACTS_DIR)/bootstrap -ldflags="-s -w" cmd/main.go
 
 .PHONY: swagger
 swagger:

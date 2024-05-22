@@ -24,30 +24,19 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-contrib/cors"
-	"github.com/google/uuid"
+	"github.com/gin-gonic/gin"
 	"github.com/mellena1/boston-archery-api/auth"
 	"github.com/mellena1/boston-archery-api/db"
 	"github.com/mellena1/boston-archery-api/handlers"
+	authHandler "github.com/mellena1/boston-archery-api/handlers/auth"
 	"github.com/mellena1/boston-archery-api/handlers/middleware"
+	"github.com/mellena1/boston-archery-api/handlers/seasons"
 	"github.com/mellena1/boston-archery-api/logging"
 )
 
 var (
 	ginLambda *ginadapter.GinLambda
 )
-
-type SeasonDB interface {
-	AddSeason(ctx context.Context, newSeason db.SeasonInput) (*db.Season, error)
-	GetAllSeasons(ctx context.Context) ([]db.Season, error)
-	GetSeasonByName(ctx context.Context, name string) (*db.Season, error)
-	UpdateSeason(ctx context.Context, id uuid.UUID, season db.SeasonInput) (*db.Season, error)
-}
-
-type API struct {
-	logger    *slog.Logger
-	db        SeasonDB
-	jwtParser middleware.JWTParser
-}
 
 func init() {
 	logger := logging.NewLogger(slog.LevelDebug)
@@ -72,6 +61,7 @@ func init() {
 		logger:    logger,
 		db:        database,
 		jwtParser: auth.NewJWTService(appVars.JWTKey),
+		appVars:   &appVars,
 	}
 
 	r := handlers.NewGin(logger)
@@ -81,18 +71,44 @@ func init() {
 		AllowHeaders:  []string{"Authorization", "Content-Type"},
 		AllowWildcard: true,
 	}))
+
+	api.addSeasonAPIs(r)
+	api.addAuthAPIs(r)
+
+	ginLambda = ginadapter.New(r)
+}
+
+type API struct {
+	logger    *slog.Logger
+	db        *db.DB
+	jwtParser *auth.JWTService
+	appVars   *handlers.AppVars
+}
+
+func (api *API) addSeasonAPIs(r *gin.Engine) {
+	seasonApi := seasons.NewAPI(api.logger, api.db)
+
 	group := r.Group("/api/v1/seasons")
 	{
-		group.GET("", api.GetSeasons)
+		group.GET("", seasonApi.GetSeasons)
 
 		adminGroup := group.Group("", middleware.ParseJWTMiddleware(api.jwtParser), middleware.MustBeAdminMiddleware())
 		{
-			adminGroup.POST("", api.PostSeason)
-			adminGroup.PUT("/:id", api.PutSeason)
+			adminGroup.POST("", seasonApi.PostSeason)
+			adminGroup.PUT("/:id", seasonApi.PutSeason)
 		}
 	}
+}
 
-	ginLambda = ginadapter.New(r)
+func (api *API) addAuthAPIs(r *gin.Engine) {
+	authApi := authHandler.NewAPI(api.logger, api.jwtParser, api.appVars)
+
+	group := r.Group("/api/v1/auth")
+	{
+		group.GET("/login", authApi.Login)
+		group.GET("/callback", authApi.Callback)
+	}
+	r.GET("/login", authApi.Login)
 }
 
 func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
