@@ -13,18 +13,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/google/uuid"
 	"github.com/mellena1/boston-archery-api/db/tablekeys"
+	"github.com/mellena1/boston-archery-api/model"
 	"github.com/mellena1/boston-archery-api/slices"
 )
 
 const seasonEntityType = "Season"
-
-type Season struct {
-	UUID      uuid.UUID
-	Name      string
-	StartDate time.Time
-	EndDate   time.Time
-	ByeWeeks  []time.Time
-}
 
 type seasonDynamoItem struct {
 	PK         string
@@ -38,9 +31,9 @@ type seasonDynamoItem struct {
 	ByeWeeks   []string
 }
 
-func (s seasonDynamoItem) toSeason() Season {
-	return Season{
-		UUID:      uuid.MustParse(strings.Split(s.SK, "#")[1]),
+func (s seasonDynamoItem) toSeason() model.Season {
+	return model.Season{
+		ID:        uuid.MustParse(strings.Split(s.SK, "#")[1]),
 		Name:      s.Name,
 		StartDate: stringToDate(s.StartDate),
 		EndDate:   stringToDate(s.EndDate),
@@ -75,7 +68,7 @@ func (s SeasonInput) toDynamoItem(uuid uuid.UUID) seasonDynamoItem {
 	}
 }
 
-func (db *DB) AddSeason(ctx context.Context, newSeason SeasonInput) (*Season, error) {
+func (db *DB) AddSeason(ctx context.Context, newSeason SeasonInput) (*model.Season, error) {
 	_, err := db.GetSeasonByName(ctx, newSeason.Name)
 	switch {
 	case errors.Is(err, ErrItemNotFound):
@@ -103,7 +96,7 @@ func (db *DB) AddSeason(ctx context.Context, newSeason SeasonInput) (*Season, er
 	return &season, err
 }
 
-func (db *DB) UpdateSeason(ctx context.Context, id uuid.UUID, season SeasonInput) (*Season, error) {
+func (db *DB) UpdateSeason(ctx context.Context, id uuid.UUID, season SeasonInput) (*model.Season, error) {
 	_, err := db.GetSeason(ctx, id)
 	switch {
 	case errors.Is(err, ErrItemNotFound):
@@ -119,7 +112,7 @@ func (db *DB) UpdateSeason(ctx context.Context, id uuid.UUID, season SeasonInput
 	case errors.Is(err, ErrItemNotFound):
 		// Item not found means we have no conflicts
 	case err == nil:
-		if existingSeason.UUID != id {
+		if existingSeason.ID != id {
 			return nil, ErrItemAlreadyExists
 		}
 	default:
@@ -143,7 +136,7 @@ func (db *DB) UpdateSeason(ctx context.Context, id uuid.UUID, season SeasonInput
 	return &updatedSeason, err
 }
 
-func (db *DB) GetSeason(ctx context.Context, uuid uuid.UUID) (*Season, error) {
+func (db *DB) GetSeason(ctx context.Context, uuid uuid.UUID) (*model.Season, error) {
 	key := seasonPK(uuid.String())
 	resp, err := db.dynamoClient.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: &db.tableName,
@@ -166,7 +159,7 @@ func (db *DB) GetSeason(ctx context.Context, uuid uuid.UUID) (*Season, error) {
 	return &season, err
 }
 
-func (db *DB) GetSeasonByName(ctx context.Context, name string) (*Season, error) {
+func (db *DB) GetSeasonByName(ctx context.Context, name string) (*model.Season, error) {
 	key := seasonPK(name)
 	keyCond := expression.Key("GSI1PK").Equal(expression.Value(key))
 	expr, err := expression.NewBuilder().WithKeyCondition(keyCond).Build()
@@ -194,7 +187,7 @@ func (db *DB) GetSeasonByName(ctx context.Context, name string) (*Season, error)
 	return &season, err
 }
 
-func (db *DB) GetAllSeasons(ctx context.Context) ([]Season, error) {
+func (db *DB) GetAllSeasons(ctx context.Context) ([]model.Season, error) {
 	keyCond := expression.Key(tablekeys.ENTITY_TYPE).Equal(expression.Value(seasonEntityType))
 	expr, err := expression.NewBuilder().WithKeyCondition(keyCond).Build()
 	if err != nil {
@@ -215,7 +208,7 @@ func (db *DB) GetAllSeasons(ctx context.Context) ([]Season, error) {
 	var seasonItems []seasonDynamoItem
 	err = attributevalue.UnmarshalListOfMaps(resp.Items, &seasonItems)
 
-	seasons := []Season{}
+	seasons := []model.Season{}
 	for _, item := range seasonItems {
 		seasons = append(seasons, item.toSeason())
 	}

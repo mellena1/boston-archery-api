@@ -90,6 +90,6 @@ func (a *API) PutSeason(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, PostSeasonResp{
-		Data: seasonFromDBModel(*season),
+		Data: seasonFromModel(*season),
 	})
 }

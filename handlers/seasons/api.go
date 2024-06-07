@@ -6,13 +6,14 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mellena1/boston-archery-api/db"
+	"github.com/mellena1/boston-archery-api/model"
 )
 
 type SeasonDB interface {
-	AddSeason(ctx context.Context, newSeason db.SeasonInput) (*db.Season, error)
-	GetAllSeasons(ctx context.Context) ([]db.Season, error)
-	GetSeasonByName(ctx context.Context, name string) (*db.Season, error)
-	UpdateSeason(ctx context.Context, id uuid.UUID, season db.SeasonInput) (*db.Season, error)
+	AddSeason(ctx context.Context, newSeason db.SeasonInput) (*model.Season, error)
+	GetAllSeasons(ctx context.Context) ([]model.Season, error)
+	GetSeasonByName(ctx context.Context, name string) (*model.Season, error)
+	UpdateSeason(ctx context.Context, id uuid.UUID, season db.SeasonInput) (*model.Season, error)
 }
 
 type API struct {

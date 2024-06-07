@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mellena1/boston-archery-api/db"
 	handlerErrors "github.com/mellena1/boston-archery-api/handlers/errors"
+	"github.com/mellena1/boston-archery-api/model"
 	"github.com/mellena1/boston-archery-api/slices"
 )
 
@@ -35,9 +36,9 @@ type Season struct {
 	ByeWeeks  []string `json:"byeWeeks,omitempty"`
 }
 
-func seasonFromDBModel(s db.Season) Season {
+func seasonFromModel(s model.Season) Season {
 	return Season{
-		ID:        s.UUID.String(),
+		ID:        s.ID.String(),
 		Name:      s.Name,
 		StartDate: s.StartDate.Format("2006-01-02"),
 		EndDate:   s.EndDate.Format("2006-01-02"),
@@ -79,8 +80,8 @@ func (a *API) getAllSeasons(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, GetSeasonsResp{
-		Data: slices.Map(seasons, func(s db.Season) Season {
-			return seasonFromDBModel(s)
+		Data: slices.Map(seasons, func(s model.Season) Season {
+			return seasonFromModel(s)
 		}),
 	})
 }
@@ -99,6 +100,6 @@ func (a *API) getSeasonByName(c *gin.Context, input GetSeasonsInput) {
 	}
 
 	c.JSON(http.StatusOK, GetSeasonsResp{
-		Data: []Season{seasonFromDBModel(*season)},
+		Data: []Season{seasonFromModel(*season)},
 	})
 }
