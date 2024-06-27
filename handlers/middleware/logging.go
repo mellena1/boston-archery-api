@@ -30,15 +30,20 @@ func LoggingMiddleware(logger *slog.Logger) gin.HandlerFunc {
 		// Process request
 		c.Next()
 
-		logger.Info("",
-			"timestamp", time.Now(),
-			"latency", formatDuration(time.Since(start)),
-			"client_ip", c.ClientIP(),
-			"method", c.Request.Method,
-			"status_code", c.Writer.Status(),
-			"body_size", c.Writer.Size(),
-			"path", c.Request.URL.Path,
-			"error", c.Errors.ByType(gin.ErrorTypePrivate).String(),
+		clientIP := c.ClientIP()
+		if clientIP == "" {
+			clientIP = c.Request.RemoteAddr
+		}
+
+		logger.InfoContext(c, "",
+			slog.Time("timestamp", time.Now()),
+			slog.String("latency", formatDuration(time.Since(start))),
+			slog.String("client_ip", clientIP),
+			slog.String("method", c.Request.Method),
+			slog.Int("status_code", c.Writer.Status()),
+			slog.Int("body_size", c.Writer.Size()),
+			slog.String("path", c.Request.URL.Path),
+			slog.String("error", c.Errors.ByType(gin.ErrorTypePrivate).String()),
 		)
 	}
 }

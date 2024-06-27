@@ -30,6 +30,7 @@ import (
 	"github.com/mellena1/boston-archery-api/handlers"
 	authHandler "github.com/mellena1/boston-archery-api/handlers/auth"
 	"github.com/mellena1/boston-archery-api/handlers/middleware"
+	"github.com/mellena1/boston-archery-api/handlers/players"
 	"github.com/mellena1/boston-archery-api/handlers/seasons"
 	"github.com/mellena1/boston-archery-api/logging"
 )
@@ -72,8 +73,12 @@ func init() {
 		AllowWildcard: true,
 	}))
 
-	api.addSeasonAPIs(r)
-	api.addAuthAPIs(r)
+	apiV1Group := r.Group("/api/v1")
+	adminGroup := apiV1Group.Group("", middleware.ParseJWTMiddleware(api.jwtParser), middleware.MustBeAdminMiddleware())
+
+	api.addPlayerAPIs(apiV1Group, adminGroup)
+	api.addSeasonAPIs(apiV1Group, adminGroup)
+	api.addAuthAPIs(apiV1Group)
 
 	ginLambda = ginadapter.New(r)
 }
@@ -85,28 +90,41 @@ type API struct {
 	appVars   *handlers.AppVars
 }
 
-func (api *API) addSeasonAPIs(r *gin.Engine) {
+func (api *API) addSeasonAPIs(apiV1Group, adminGroup *gin.RouterGroup) {
 	seasonApi := seasons.NewAPI(api.logger, api.db)
 
-	group := r.Group("/api/v1/seasons")
-	{
-		group.GET("", seasonApi.GetSeasons)
+	apiV1Group.GET("/seasons", seasonApi.GetSeasons)
 
-		adminGroup := group.Group("", middleware.ParseJWTMiddleware(api.jwtParser), middleware.MustBeAdminMiddleware())
-		{
-			adminGroup.POST("", seasonApi.PostSeason)
-			adminGroup.PUT("/:id", seasonApi.PutSeason)
-		}
+	seasonAdminGroup := adminGroup.Group("/season")
+	{
+		seasonAdminGroup.POST("", seasonApi.PostSeason)
+		seasonAdminGroup.PUT("/:id", seasonApi.PutSeason)
 	}
 }
 
-func (api *API) addAuthAPIs(r *gin.Engine) {
+func (api *API) addPlayerAPIs(apiV1Group, adminGroup *gin.RouterGroup) {
+	playerApi := players.NewAPI(api.logger, api.db)
+
+	apiV1Group.GET("/players", playerApi.GetPlayers)
+
+	playerGroup := apiV1Group.Group("/player")
+	{
+		playerGroup.GET("/:id", playerApi.GetPlayer)
+	}
+
+	playerAdminGroup := adminGroup.Group("/player")
+	{
+		playerAdminGroup.POST("", playerApi.PostPlayer)
+	}
+}
+
+func (api *API) addAuthAPIs(apiV1Group *gin.RouterGroup) {
 	authApi := authHandler.NewAPI(api.logger, api.jwtParser, api.appVars)
 
-	group := r.Group("/api/v1/auth")
+	authGroup := apiV1Group.Group("/auth")
 	{
-		group.GET("/login", authApi.Login)
-		group.GET("/callback", authApi.Callback)
+		authGroup.GET("/login", authApi.Login)
+		authGroup.GET("/callback", authApi.Callback)
 	}
 }
 

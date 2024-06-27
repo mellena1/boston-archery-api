@@ -11,6 +11,10 @@ type Date time.Time
 
 var _ json.Unmarshaler = &Date{}
 
+func (d *Date) String() string {
+	return d.ToTime().Format(time.DateOnly)
+}
+
 func (d *Date) UnmarshalJSON(bs []byte) error {
 	var s string
 	err := json.Unmarshal(bs, &s)

@@ -47,14 +47,14 @@ func (a *API) Callback(c *gin.Context) {
 
 	token, err := a.oauthConf.Exchange(ctx, c.Query("code"))
 	if err != nil {
-		a.logger.Error("failed to get token", "error", err)
+		a.logger.ErrorContext(c, "failed to get token", "error", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, failedToGetTokenError)
 		return
 	}
 
 	res, err := a.oauthConf.Client(ctx, token).Get(guildMemberInfoURL)
 	if err != nil {
-		a.logger.Error("failed to get guild info", "error", err)
+		a.logger.ErrorContext(c, "failed to get guild info", "error", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, failedToGetTokenError)
 		return
 	}
@@ -68,7 +68,7 @@ func (a *API) Callback(c *gin.Context) {
 	var memberInfo discordGuildMemberResp
 	err = json.NewDecoder(res.Body).Decode(&memberInfo)
 	if err != nil {
-		a.logger.Error("failed to decode discord resp", "error", err)
+		a.logger.ErrorContext(c, "failed to decode discord resp", "error", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, failedToGetTokenError)
 		return
 	}
@@ -82,12 +82,10 @@ func (a *API) Callback(c *gin.Context) {
 		UserID:     memberInfo.User.ID,
 	}, jwtTTL)
 	if err != nil {
-		a.logger.Error("failed to make jwt", "error", err)
+		a.logger.ErrorContext(c, "failed to make jwt", "error", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, failedToGetTokenError)
 		return
 	}
-
-	fmt.Printf("%+v\n", memberInfo)
 
 	redirectURL := fmt.Sprintf("%s/login?authToken=%s", a.appVars.WebHost, jwt)
 	c.Redirect(http.StatusTemporaryRedirect, redirectURL)

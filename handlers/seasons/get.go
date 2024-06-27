@@ -2,6 +2,7 @@ package seasons
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -48,7 +49,7 @@ func seasonFromModel(s model.Season) Season {
 	}
 }
 
-// swagger:route GET /seasons seasons getSeasons
+// swagger:route GET /seasons season getSeasons
 // Get all seasons.
 //
 // responses:
@@ -74,7 +75,7 @@ func (a *API) GetSeasons(c *gin.Context) {
 func (a *API) getAllSeasons(c *gin.Context) {
 	seasons, err := a.db.GetAllSeasons(c.Request.Context())
 	if err != nil {
-		a.logger.Error("failed to get seasons", "error", err)
+		a.logger.ErrorContext(c, "failed to get seasons", slog.String("error", err.Error()))
 		c.AbortWithStatusJSON(http.StatusInternalServerError, failedToFetchSeasonsError)
 		return
 	}
@@ -93,7 +94,7 @@ func (a *API) getSeasonByName(c *gin.Context, input GetSeasonsInput) {
 		case errors.Is(err, db.ErrItemNotFound):
 			c.AbortWithStatusJSON(http.StatusNotFound, handlerErrors.NotFoundError)
 		default:
-			a.logger.Error("failed to get seasons", "error", err)
+			a.logger.ErrorContext(c, "failed to get seasons", slog.String("error", err.Error()))
 			c.AbortWithStatusJSON(http.StatusInternalServerError, failedToFetchSeasonsError)
 		}
 		return

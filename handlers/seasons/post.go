@@ -3,6 +3,7 @@ package seasons
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -36,7 +37,7 @@ type PostSeasonResp struct {
 	Data Season `json:"data"`
 }
 
-// swagger:route POST /seasons seasons postSeason
+// swagger:route POST /season season postSeason
 //
 // Add a new season.
 //
@@ -48,13 +49,13 @@ type PostSeasonResp struct {
 func (a *API) PostSeason(c *gin.Context) {
 	var input PostSeasonInput
 	if err := c.ShouldBindJSON(&input.Body); err != nil {
-		a.logger.Error("failed to bind json", "error", err)
+		a.logger.WarnContext(c, "failed to bind json", slog.String("error", err.Error()))
 		c.AbortWithStatusJSON(http.StatusBadRequest, handlerErrors.BadRequestError)
 		return
 	}
 
 	if err := validateByeWeeks(input.Body.StartDate.ToTime(), input.Body.EndDate.ToTime(), input.Body.ByeWeeks); err != nil {
-		a.logger.Error("failed to validate bye weeks", "error", err)
+		a.logger.WarnContext(c, "failed to validate bye weeks", slog.String("error", err.Error()))
 		c.AbortWithStatusJSON(http.StatusBadRequest, handlerErrors.BadRequestError)
 		return
 	}
@@ -72,7 +73,7 @@ func (a *API) PostSeason(c *gin.Context) {
 		case errors.Is(err, db.ErrItemAlreadyExists):
 			c.AbortWithStatusJSON(http.StatusConflict, handlerErrors.AlreadyExistsError)
 		default:
-			a.logger.Error("failed to add season to db", "error", err)
+			a.logger.ErrorContext(c, "failed to add season to db", slog.String("error", err.Error()))
 			c.AbortWithStatusJSON(http.StatusInternalServerError, failedToAddSeasonError)
 		}
 		return
@@ -87,7 +88,7 @@ func validateByeWeeks(startDate, endDate time.Time, byeWeeks []handlers.Date) er
 	for _, bye := range byeWeeks {
 		byeAsTime := bye.ToTime()
 		if startDate.After(byeAsTime) || endDate.Before(byeAsTime) {
-			return fmt.Errorf("bye week is not in season")
+			return fmt.Errorf("bye week %q is not in season", bye.String())
 		}
 	}
 

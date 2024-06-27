@@ -2,6 +2,7 @@ package seasons
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -33,39 +34,40 @@ type PutSeasonInput struct {
 	}
 }
 
-// swagger:model PostSeasonResp
+// swagger:model PutSeasonResp
 type PutSeasonResp struct {
 	Data Season `json:"data"`
 }
 
-// swagger:route PUT /seasons/{id} seasons putSeason
+// swagger:route PUT /season/{ID} season putSeason
 //
-// Add a new season.
+// Update a season.
 //
 // responses:
 //
-//	200: body:PostSeasonResp
+//	200: body:PutSeasonResp
 //	400: body:Error
 //	500: body:Error
 func (a *API) PutSeason(c *gin.Context) {
 	var input PutSeasonInput
-
 	var err error
-	input.ID, err = uuid.Parse(c.Param("id"))
+
+	strId := c.Param("id")
+	input.ID, err = uuid.Parse(strId)
 	if err != nil {
-		a.logger.Error("invalid ID", "error", err)
+		a.logger.WarnContext(c, "invalid ID", slog.String("id", strId), slog.String("error", err.Error()))
 		c.AbortWithStatusJSON(http.StatusBadRequest, handlerErrors.BadRequestError)
 		return
 	}
 
 	if err := c.ShouldBindJSON(&input.Body); err != nil {
-		a.logger.Error("failed to bind json", "error", err)
+		a.logger.WarnContext(c, "failed to bind json", slog.String("error", err.Error()))
 		c.AbortWithStatusJSON(http.StatusBadRequest, handlerErrors.BadRequestError)
 		return
 	}
 
 	if err := validateByeWeeks(input.Body.StartDate.ToTime(), input.Body.EndDate.ToTime(), input.Body.ByeWeeks); err != nil {
-		a.logger.Error("failed to validate bye weeks", "error", err)
+		a.logger.WarnContext(c, "failed to validate bye weeks", slog.String("error", err.Error()))
 		c.AbortWithStatusJSON(http.StatusBadRequest, handlerErrors.BadRequestError)
 		return
 	}
@@ -83,7 +85,7 @@ func (a *API) PutSeason(c *gin.Context) {
 		case errors.Is(err, db.ErrItemNotFound):
 			c.AbortWithStatusJSON(http.StatusNotFound, handlerErrors.NotFoundError)
 		default:
-			a.logger.Error("failed to update season to db", "error", err, "id", input.ID)
+			a.logger.ErrorContext(c, "failed to update season to db", slog.String("id", input.ID.String()), slog.String("error", err.Error()))
 			c.AbortWithStatusJSON(http.StatusInternalServerError, failedToUpdateSeasonError)
 		}
 		return

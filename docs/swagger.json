@@ -17,25 +17,85 @@
   "host": "localhost:3000",
   "basePath": "/api/v1",
   "paths": {
-    "/seasons": {
-      "get": {
+    "/player": {
+      "post": {
         "tags": [
-          "seasons"
+          "player"
         ],
-        "summary": "Get all seasons.",
-        "operationId": "getSeasons",
+        "summary": "Add a new player.",
+        "operationId": "postPlayer",
         "parameters": [
           {
-            "type": "string",
-            "name": "Name",
-            "in": "query"
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "firstName",
+                "lastName"
+              ],
+              "properties": {
+                "firstName": {
+                  "type": "string",
+                  "x-go-name": "FirstName"
+                },
+                "lastName": {
+                  "type": "string",
+                  "x-go-name": "LastName"
+                }
+              }
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "GetSeasonsResp",
+            "description": "PostPlayerResp",
             "schema": {
-              "$ref": "#/definitions/GetSeasonsResp"
+              "$ref": "#/definitions/PostPlayerResp"
+            }
+          },
+          "400": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/player/{ID}": {
+      "get": {
+        "tags": [
+          "player"
+        ],
+        "summary": "Get a player by ID.",
+        "operationId": "getPlayer",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "GetPlayerResp",
+            "schema": {
+              "$ref": "#/definitions/GetPlayerResp"
+            }
+          },
+          "400": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           },
           "500": {
@@ -46,9 +106,91 @@
           }
         }
       },
+      "put": {
+        "tags": [
+          "player"
+        ],
+        "summary": "Update a player.",
+        "operationId": "putPlayer",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "firstName",
+                "lastName"
+              ],
+              "properties": {
+                "firstName": {
+                  "type": "string",
+                  "x-go-name": "FirstName"
+                },
+                "lastName": {
+                  "type": "string",
+                  "x-go-name": "LastName"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PutPlayerResp",
+            "schema": {
+              "$ref": "#/definitions/PutPlayerResp"
+            }
+          },
+          "400": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/players": {
+      "get": {
+        "tags": [
+          "player"
+        ],
+        "summary": "Get all players.",
+        "operationId": "getPlayers",
+        "responses": {
+          "200": {
+            "description": "GetPlayersResp",
+            "schema": {
+              "$ref": "#/definitions/GetPlayersResp"
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/season": {
       "post": {
         "tags": [
-          "seasons"
+          "season"
         ],
         "summary": "Add a new season.",
         "operationId": "postSeason",
@@ -112,12 +254,12 @@
         }
       }
     },
-    "/seasons/{id}": {
+    "/season/{ID}": {
       "put": {
         "tags": [
-          "seasons"
+          "season"
         ],
-        "summary": "Add a new season.",
+        "summary": "Update a season.",
         "operationId": "putSeason",
         "parameters": [
           {
@@ -166,15 +308,45 @@
         ],
         "responses": {
           "200": {
-            "description": "PostSeasonResp",
+            "description": "PutSeasonResp",
             "schema": {
-              "$ref": "#/definitions/PostSeasonResp"
+              "$ref": "#/definitions/PutSeasonResp"
             }
           },
           "400": {
             "description": "Error",
             "schema": {
               "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/seasons": {
+      "get": {
+        "tags": [
+          "season"
+        ],
+        "summary": "Get all seasons.",
+        "operationId": "getSeasons",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "Name",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "GetSeasonsResp",
+            "schema": {
+              "$ref": "#/definitions/GetSeasonsResp"
             }
           },
           "500": {
@@ -197,6 +369,28 @@
       },
       "x-go-package": "github.com/mellena1/boston-archery-api/handlers/errors"
     },
+    "GetPlayerResp": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/Player"
+        }
+      },
+      "x-go-package": "github.com/mellena1/boston-archery-api/handlers/players"
+    },
+    "GetPlayersResp": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Player"
+          },
+          "x-go-name": "Data"
+        }
+      },
+      "x-go-package": "github.com/mellena1/boston-archery-api/handlers/players"
+    },
     "GetSeasonsResp": {
       "type": "object",
       "properties": {
@@ -210,6 +404,33 @@
       },
       "x-go-package": "github.com/mellena1/boston-archery-api/handlers/seasons"
     },
+    "Player": {
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "type": "string",
+          "x-go-name": "FirstName"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "lastName": {
+          "type": "string",
+          "x-go-name": "LastName"
+        }
+      },
+      "x-go-package": "github.com/mellena1/boston-archery-api/handlers/players"
+    },
+    "PostPlayerResp": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/Player"
+        }
+      },
+      "x-go-package": "github.com/mellena1/boston-archery-api/handlers/players"
+    },
     "PostSeasonResp": {
       "type": "object",
       "properties": {
@@ -217,7 +438,24 @@
           "$ref": "#/definitions/Season"
         }
       },
-      "x-go-name": "PutSeasonResp",
+      "x-go-package": "github.com/mellena1/boston-archery-api/handlers/seasons"
+    },
+    "PutPlayerResp": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/Player"
+        }
+      },
+      "x-go-package": "github.com/mellena1/boston-archery-api/handlers/players"
+    },
+    "PutSeasonResp": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/Season"
+        }
+      },
       "x-go-package": "github.com/mellena1/boston-archery-api/handlers/seasons"
     },
     "Season": {

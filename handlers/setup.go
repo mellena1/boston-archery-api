@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/gin-contrib/requestid"
 	"github.com/gin-gonic/gin"
 	"github.com/mellena1/boston-archery-api/db"
 	"github.com/mellena1/boston-archery-api/handlers/middleware"
@@ -23,7 +24,7 @@ func NewGin(logger *slog.Logger) *gin.Engine {
 	}
 	engine := gin.New()
 
-	engine.Use(middleware.LoggingMiddleware(logger), gin.Recovery())
+	engine.Use(middleware.LoggingMiddleware(logger), requestid.New(), gin.Recovery())
 
 	return engine
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/google/uuid"
 	"github.com/mellena1/boston-archery-api/db/tablekeys"
 	"github.com/mellena1/boston-archery-api/model"
@@ -80,20 +79,13 @@ func (db *DB) AddSeason(ctx context.Context, newSeason SeasonInput) (*model.Seas
 	}
 
 	dynamoItem := newSeason.toDynamoItem(uuid.New())
-	item, err := attributevalue.MarshalMap(dynamoItem)
-	if err != nil {
-		return nil, err
-	}
-	_, err = db.dynamoClient.PutItem(ctx, &dynamodb.PutItemInput{
-		TableName: &db.tableName,
-		Item:      item,
-	})
+	err = db.putItem(ctx, dynamoItem)
 	if err != nil {
 		return nil, err
 	}
 
 	season := dynamoItem.toSeason()
-	return &season, err
+	return &season, nil
 }
 
 func (db *DB) UpdateSeason(ctx context.Context, id uuid.UUID, season SeasonInput) (*model.Season, error) {
@@ -120,41 +112,24 @@ func (db *DB) UpdateSeason(ctx context.Context, id uuid.UUID, season SeasonInput
 	}
 
 	dynamoItem := season.toDynamoItem(id)
-	item, err := attributevalue.MarshalMap(dynamoItem)
-	if err != nil {
-		return nil, err
-	}
-	_, err = db.dynamoClient.PutItem(ctx, &dynamodb.PutItemInput{
-		TableName: &db.tableName,
-		Item:      item,
-	})
+	err = db.putItem(ctx, dynamoItem)
 	if err != nil {
 		return nil, err
 	}
 
 	updatedSeason := dynamoItem.toSeason()
-	return &updatedSeason, err
+	return &updatedSeason, nil
 }
 
 func (db *DB) GetSeason(ctx context.Context, uuid uuid.UUID) (*model.Season, error) {
+	var seasonItem seasonDynamoItem
+
 	key := seasonPK(uuid.String())
-	resp, err := db.dynamoClient.GetItem(ctx, &dynamodb.GetItemInput{
-		TableName: &db.tableName,
-		Key: map[string]types.AttributeValue{
-			tablekeys.PK: &types.AttributeValueMemberS{Value: key},
-			tablekeys.SK: &types.AttributeValueMemberS{Value: key},
-		},
-	})
+	err := db.getItem(ctx, key, key, &seasonItem)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(resp.Item) == 0 {
-		return nil, ErrItemNotFound
-	}
-
-	var seasonItem seasonDynamoItem
-	err = attributevalue.UnmarshalMap(resp.Item, &seasonItem)
 	season := seasonItem.toSeason()
 	return &season, err
 }
@@ -188,32 +163,18 @@ func (db *DB) GetSeasonByName(ctx context.Context, name string) (*model.Season, 
 }
 
 func (db *DB) GetAllSeasons(ctx context.Context) ([]model.Season, error) {
-	keyCond := expression.Key(tablekeys.ENTITY_TYPE).Equal(expression.Value(seasonEntityType))
-	expr, err := expression.NewBuilder().WithKeyCondition(keyCond).Build()
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := db.dynamoClient.Query(ctx, &dynamodb.QueryInput{
-		TableName:                 &db.tableName,
-		IndexName:                 &db.entityTypeIndexName,
-		KeyConditionExpression:    expr.KeyCondition(),
-		ExpressionAttributeNames:  expr.Names(),
-		ExpressionAttributeValues: expr.Values(),
-	})
-	if err != nil {
-		return nil, err
-	}
-
 	var seasonItems []seasonDynamoItem
-	err = attributevalue.UnmarshalListOfMaps(resp.Items, &seasonItems)
-
-	seasons := []model.Season{}
-	for _, item := range seasonItems {
-		seasons = append(seasons, item.toSeason())
+	err := db.getAllOfEntity(ctx, seasonEntityType, &seasonItems)
+	if err != nil {
+		return nil, err
 	}
 
-	return seasons, err
+	seasons := make([]model.Season, len(seasonItems))
+	for i, item := range seasonItems {
+		seasons[i] = item.toSeason()
+	}
+
+	return seasons, nil
 }
 
 func seasonPK(key string) string {
