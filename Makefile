@@ -27,7 +27,3 @@ swagger-serve: swagger
 .PHONY: test
 test:
 	go test ./...
-
-.PHONY: generate-erd
-generate-erd:
-	mmdc -i docs/erd.mmd -o docs/erd.png

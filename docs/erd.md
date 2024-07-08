@@ -1,3 +1,6 @@
+# erd
+
+```mermaid
 ---
 title: Boston Archery
 ---
@@ -57,3 +60,4 @@ STATLINE {
 }
 GAME ||--o{ STATLINE : HAS
 PLAYER ||--o{ STATLINE : HAS
+```
