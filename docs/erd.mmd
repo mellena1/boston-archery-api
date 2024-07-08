@@ -1,0 +1,47 @@
+---
+title: Boston Archery
+---
+erDiagram
+SEASON {
+    uuid id
+    string name
+    datetime startDate
+    datetime endDate
+    datetime[] byeWeeks
+}
+TEAM {
+    uuid id
+    string name
+    string[] teamColors
+    uuid captain
+}
+SEASONTEAM }o--|| TEAM : ""
+SEASONTEAM }o--|| SEASON : ""
+SEASONTEAM {
+    uuid teamId
+    uuid seasonId
+}
+PLAYER {
+    uuid id
+    string firstName
+    string lastName
+    string discordUser
+    string pictureUrl
+}
+SEASONTEAMPLAYER {
+    uuid seasonId
+    uuid teamId
+    uuid playerId
+}
+SEASONTEAMPLAYER }o--|| PLAYER : ""
+SEASONTEAMPLAYER }o--|| TEAM : ""
+SEASONTEAMPLAYER }o--|| SEASON : ""
+GAME {
+    uuid id
+    uuid homeTeam
+    uuid awayTeam
+    int homeScore
+    int awayScore
+    datetime startTime
+}
+
