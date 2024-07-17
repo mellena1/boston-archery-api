@@ -72,44 +72,46 @@ PLAYER ||--o{ STATLINE : HAS
 
 ## Access patterns
 
-| Access Pattern                                        | Table/GSI/LSI | Key Condition               | Filter Expression |
-| ----------------------------------------------------- | ------------- | --------------------------- | ----------------- |
-| Create/Update Season by ID                            | Table         | PK=SeasonID and SK=SeasonID |                   |
-| Get season by ID                                      | Table         | PK=SeasonID and SK=SeasonID |                   |
-| Get list of all seasons                               | GSI1          | PK="SEASON"                 |                   |
-| Get dog eat dog winner/stats by season                | TODO          | TODO                        |                   |
-| Get stat totals by season?                            | TODO          | TODO                        |                   |
-| Get players by season                                 | TODO          | TODO                        |                   |
-| Get all team records and points by season (standings) | TODO          | TODO                        |                   |
-| Get all stat records by season                        | TODO          | TODO                        |                   |
-| Create/Update Team by ID                              | Table         | PK=TeamID and SK=TeamID     |                   |
-| Get team by ID                                        | Table         | PK=TeamID and SK=TeamID     |                   |
-| Get all teams                                         | GSI1          | PK="TEAM"                   |                   |
-| Get all teams by season                               | TODO          | TODO                        |                   |
-| Get all team stats by season                          | TODO          | TODO                        |                   |
-| Get team stats all time                               | TODO          | TODO                        |                   |
-| Get team roster by season                             | TODO          | TODO                        |                   |
-| Get record by team all time                           | TODO          | TODO                        |                   |
-| Get points by team all time                           | TODO          | TODO                        |                   |
-| Create/Update Player by ID                            | Table         | PK=PlayerID and SK=PlayerID |                   |
-| Get player by ID                                      | Table         | PK=PlayerID and SK=PlayerID |                   |
-| Get all players                                       | GSI1          | PK="PLAYER"                 |                   |
-| Get player stats by season                            | TODO          | TODO                        |                   |
-| Get player stats by year                              | TODO          | TODO                        |                   |
-| Get dog eat dog stats by player                       | TODO          | TODO                        |                   |
-| Get record by player all time                         | TODO          | TODO                        |                   |
-| Get record by player by season                        | TODO          | TODO                        |                   |
-| Get stat improvements by season                       | TODO          | TODO                        |                   |
-| Create/Update Game by ID                              | TODO          | TODO                        |                   |
-| Get game by ID                                        | TODO          | TODO                        |                   |
-| Get all games by player                               | TODO          | TODO                        |                   |
-| Get all games by season                               | TODO          | TODO                        |                   |
-| Get next week games                                   | TODO          | TODO                        |                   |
-| Get last week games                                   | TODO          | TODO                        |                   |
-| Get all games by team                                 | TODO          | TODO                        |                   |
-| Get all player stats by game                          | TODO          | TODO                        |                   |
-| Get team stats by game                                | TODO          | TODO                        |                   |
-| Add dog eat dog winners by game                       | TODO          | TODO                        |                   |
-| Set rosters/lineup/subs per game                      | TODO          | TODO                        |                   |
-| Get individual stat records by year                   | TODO          | TODO                        |                   |
-| Get individual stat records all time                  | TODO          | TODO                        |                   |
+| Access Pattern                                        | Table/GSI/LSI | Key Condition                          | Filter Expression | Notes                                              |
+| ----------------------------------------------------- | ------------- | -------------------------------------- | ----------------- | -------------------------------------------------- |
+| Create/Update Season by ID                            | Table         | PK=SeasonID and SK=SeasonID            |                   |                                                    |
+| Get season by ID                                      | Table         | PK=SeasonID and SK=SeasonID            |                   |                                                    |
+| Get list of all seasons ordered by date               | GSI1          | PK="SEASONS"                           |                   | Can reverse sort order in query if needed          |
+| Get dog eat dog winner/stats by season                | Table         | PK=SeasonID and SK=SeasonID            |                   |                                                    |
+| Get stat totals by season?                            | Table         | PK=SeasonID and SK=SeasonID            |                   |                                                    |
+| Get all teams by season                               | Table         | PK=SeasonID and SK startsWith("TEAM#") |                   |                                                    |
+| Get all team records and points by season (standings) | Table         | PK=SeasonID and SK startsWith("TEAM#") |                   |                                                    |
+| Get all stat records by season                        | TODO          | TODO                                   |                   |                                                    |
+| Create/Update Team by ID                              | Table         | PK=TeamID and SK=TeamID                |                   |                                                    |
+| Get team by ID                                        | Table         | PK=TeamID and SK=TeamID                |                   |                                                    |
+| Get all teams                                         | GSI1          | PK="TEAMS"                             |                   |                                                    |
+| Get all seasons by team                               | GSI1          | PK=TeamID and SK startsWith("SEASON#") |                   |                                                    |
+| Get all team stats by season                          | Table         | PK=SeasonID and SK=TeamID              |                   |                                                    |
+| Get team stats all time                               | Table         | PK=TeamID and SK=TeamID                |                   |                                                    |
+| Get team roster by season                             | TODO          | TODO                                   |                   |                                                    |
+| Get record by team all time                           | Table         | PK=TeamID and SK=TeamID                |                   |                                                    |
+| Get points by team all time                           | Table         | PK=TeamID and SK=TeamID                |                   |                                                    |
+| Create/Update Player by ID                            | Table         | PK=PlayerID and SK=PlayerID            |                   |                                                    |
+| Get player by ID                                      | Table         | PK=PlayerID and SK=PlayerID            |                   |                                                    |
+| Get all players                                       | GSI1          | PK="PLAYERS"                           |                   |                                                    |
+| Get players by season                                 | TODO          | TODO                                   |                   |                                                    |
+| Get player stats by season                            | TODO          | TODO                                   |                   |                                                    |
+| Get player stats by year                              | TODO          | TODO                                   |                   |                                                    |
+| Get dog eat dog stats by player                       | TODO          | TODO                                   |                   |                                                    |
+| Get record by player all time                         | TODO          | TODO                                   |                   |                                                    |
+| Get record by player by season                        | TODO          | TODO                                   |                   |                                                    |
+| Get player stat improvements by season                | TODO          | TODO                                   |                   |                                                    |
+| Create/Update Game by ID and Season ID                | Table         | PK=SeasonID and SK=GameID              |                   |                                                    |
+| Get game by ID?                                       | TODO          | TODO                                   |                   |                                                    |
+| Get game by ID and Season ID                          | Table         | PK=SeasonID and SK=GameID              |                   |                                                    |
+| Get all games by player                               | TODO          | TODO                                   |                   |                                                    |
+| Get all games by season                               | Table         | PK=SeasonID and SK startsWith("GAME#") |                   |                                                    |
+| Get next week games by season                         | GSI1          | PK=SeasonID and SK startsWith("GAME#") |                   | Reverse sort, get most recent 3                    |
+| Get last week games by season                         | GSI1          | PK=SeasonID and SK startsWith("GAME#") |                   | Reverse sort, get most recent 6, take last 3       |
+| Get all games by team                                 | GSI2 and GSI3 | PK=TeamID and SK startsWith("GAME#")   |                   | Will be ordered games furtherest in the past first |
+| Get all player stats by game                          | TODO          | TODO                                   |                   |                                                    |
+| Get team stats by game                                | TODO          | TODO                                   |                   |                                                    |
+| Add dog eat dog winners by game                       | Table         | PK=SeasonID and SK=GameID              |                   |                                                    |
+| Set rosters/lineup/subs per game                      | TODO          | TODO                                   |                   |                                                    |
+| Get individual stat records by year                   | TODO          | TODO                                   |                   |                                                    |
+| Get individual stat records all time                  | TODO          | TODO                                   |                   |                                                    |

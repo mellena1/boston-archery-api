@@ -1,0 +1,560 @@
+{
+  "ModelName": "Archery",
+  "ModelMetadata": {
+    "Author": "",
+    "DateCreated": "Sep 12, 2023, 06:33 PM",
+    "DateLastModified": "Jul 16, 2024, 09:02 PM",
+    "Description": "",
+    "AWSService": "Amazon DynamoDB",
+    "Version": "3.0"
+  },
+  "DataModel": [
+    {
+      "TableName": "Archery",
+      "KeyAttributes": {
+        "PartitionKey": {
+          "AttributeName": "PK",
+          "AttributeType": "S"
+        },
+        "SortKey": {
+          "AttributeName": "SK",
+          "AttributeType": "S"
+        }
+      },
+      "NonKeyAttributes": [
+        {
+          "AttributeName": "GSI1PK",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "GSI1SK",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "DogEatDogPoints",
+          "AttributeType": "M"
+        },
+        {
+          "AttributeName": "Stats",
+          "AttributeType": "M"
+        },
+        {
+          "AttributeName": "Wins",
+          "AttributeType": "N"
+        },
+        {
+          "AttributeName": "Losses",
+          "AttributeType": "N"
+        },
+        {
+          "AttributeName": "PointsFor",
+          "AttributeType": "N"
+        },
+        {
+          "AttributeName": "PointsAgainst",
+          "AttributeType": "N"
+        },
+        {
+          "AttributeName": "HomeTeam",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "AwayTeam",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "GSI2PK",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "GSI2SK",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "GSI3PK",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "GSI3SK",
+          "AttributeType": "S"
+        }
+      ],
+      "GlobalSecondaryIndexes": [
+        {
+          "IndexName": "GSI1",
+          "KeyAttributes": {
+            "PartitionKey": {
+              "AttributeName": "GSI1PK",
+              "AttributeType": "S"
+            },
+            "SortKey": {
+              "AttributeName": "GSI1SK",
+              "AttributeType": "S"
+            }
+          },
+          "Projection": {
+            "ProjectionType": "ALL"
+          }
+        },
+        {
+          "IndexName": "GSI2",
+          "KeyAttributes": {
+            "PartitionKey": {
+              "AttributeName": "GSI2PK",
+              "AttributeType": "S"
+            },
+            "SortKey": {
+              "AttributeName": "GSI2SK",
+              "AttributeType": "S"
+            }
+          },
+          "Projection": {
+            "ProjectionType": "ALL"
+          }
+        },
+        {
+          "IndexName": "GSI3",
+          "KeyAttributes": {
+            "PartitionKey": {
+              "AttributeName": "GSI3PK",
+              "AttributeType": "S"
+            },
+            "SortKey": {
+              "AttributeName": "GSI3SK",
+              "AttributeType": "S"
+            }
+          },
+          "Projection": {
+            "ProjectionType": "ALL"
+          }
+        }
+      ],
+      "TableData": [
+        {
+          "PK": {
+            "S": "SEASON#7367d7c4-ed2e-4787-9f3a-c6184ee4edae"
+          },
+          "SK": {
+            "S": "SEASON#7367d7c4-ed2e-4787-9f3a-c6184ee4edae"
+          },
+          "GSI1PK": {
+            "S": "SEASONS"
+          },
+          "GSI1SK": {
+            "S": "SEASON#StartDate#7367d7c4-ed2e-4787-9f3a-c6184ee4edae"
+          },
+          "DogEatDogPoints": {
+            "M": {
+              "94852af8-2d5f-4538-9840-47d0cb1f7a76": {
+                "N": 7
+              },
+              "72e9a410-9051-451f-a306-327fa678595a": {
+                "N": 3
+              }
+            }
+          },
+          "Stats": {
+            "M": {
+              "Shots": {
+                "N": 2412
+              },
+              "Kills": {
+                "N": 1000
+              }
+            }
+          }
+        },
+        {
+          "PK": {
+            "S": "SEASON#9c35f5a2-9b4d-49b8-8ad4-ad5f10465f50"
+          },
+          "SK": {
+            "S": "SEASON#9c35f5a2-9b4d-49b8-8ad4-ad5f10465f50"
+          },
+          "GSI1PK": {
+            "S": "SEASONS"
+          },
+          "GSI1SK": {
+            "S": "SEASON#StartDate#9c35f5a2-9b4d-49b8-8ad4-ad5f10465f50"
+          },
+          "DogEatDogPoints": {
+            "M": {
+              "94852af8-2d5f-4538-9840-47d0cb1f7a76": {
+                "N": 3
+              },
+              "72e9a410-9051-451f-a306-327fa678595a": {
+                "N": 7
+              }
+            }
+          },
+          "Stats": {
+            "M": {
+              "Shots": {
+                "N": 1234
+              },
+              "Kills": {
+                "N": 543
+              }
+            }
+          }
+        },
+        {
+          "PK": {
+            "S": "TEAM#406bf779-f4ce-4c45-8d79-bd3fa3d0a3f7"
+          },
+          "SK": {
+            "S": "TEAM#406bf779-f4ce-4c45-8d79-bd3fa3d0a3f7"
+          },
+          "GSI1PK": {
+            "S": "TEAMS"
+          },
+          "GSI1SK": {
+            "S": "TEAM#406bf779-f4ce-4c45-8d79-bd3fa3d0a3f7"
+          },
+          "Stats": {
+            "M": {
+              "Shots": {
+                "N": 300
+              },
+              "Kills": {
+                "N": 100
+              }
+            }
+          },
+          "Wins": {
+            "N": "10"
+          },
+          "Losses": {
+            "N": "6"
+          },
+          "PointsFor": {
+            "N": "115"
+          },
+          "PointsAgainst": {
+            "N": "89"
+          }
+        },
+        {
+          "PK": {
+            "S": "TEAM#971387a3-f755-496e-897c-4b4163f7b3c7"
+          },
+          "SK": {
+            "S": "TEAM#971387a3-f755-496e-897c-4b4163f7b3c7"
+          },
+          "GSI1PK": {
+            "S": "TEAMS"
+          },
+          "GSI1SK": {
+            "S": "TEAM#971387a3-f755-496e-897c-4b4163f7b3c7"
+          },
+          "Stats": {
+            "M": {
+              "Shots": {
+                "N": 300
+              },
+              "Kills": {
+                "N": 100
+              }
+            }
+          },
+          "Wins": {
+            "N": "8"
+          },
+          "Losses": {
+            "N": "3"
+          },
+          "PointsFor": {
+            "N": "89"
+          },
+          "PointsAgainst": {
+            "N": "75"
+          }
+        },
+        {
+          "PK": {
+            "S": "PLAYER#94852af8-2d5f-4538-9840-47d0cb1f7a76"
+          },
+          "SK": {
+            "S": "PLAYER#94852af8-2d5f-4538-9840-47d0cb1f7a76"
+          },
+          "GSI1PK": {
+            "S": "PLAYERS"
+          },
+          "GSI1SK": {
+            "S": "PLAYER#94852af8-2d5f-4538-9840-47d0cb1f7a76"
+          }
+        },
+        {
+          "PK": {
+            "S": "PLAYER#72e9a410-9051-451f-a306-327fa678595a"
+          },
+          "SK": {
+            "S": "PLAYER#72e9a410-9051-451f-a306-327fa678595a"
+          },
+          "GSI1PK": {
+            "S": "PLAYERS"
+          },
+          "GSI1SK": {
+            "S": "PLAYER#72e9a410-9051-451f-a306-327fa678595a"
+          }
+        },
+        {
+          "PK": {
+            "S": "SEASON#7367d7c4-ed2e-4787-9f3a-c6184ee4edae"
+          },
+          "SK": {
+            "S": "TEAM#406bf779-f4ce-4c45-8d79-bd3fa3d0a3f7"
+          },
+          "GSI1PK": {
+            "S": "TEAM#406bf779-f4ce-4c45-8d79-bd3fa3d0a3f7"
+          },
+          "GSI1SK": {
+            "S": "SEASON#7367d7c4-ed2e-4787-9f3a-c6184ee4edae"
+          },
+          "Stats": {
+            "M": {
+              "Shots": {
+                "N": 300
+              },
+              "Kills": {
+                "N": 100
+              }
+            }
+          },
+          "Wins": {
+            "N": "5"
+          },
+          "Losses": {
+            "N": "4"
+          },
+          "PointsFor": {
+            "N": "60"
+          },
+          "PointsAgainst": {
+            "N": "55"
+          }
+        },
+        {
+          "PK": {
+            "S": "SEASON#7367d7c4-ed2e-4787-9f3a-c6184ee4edae"
+          },
+          "SK": {
+            "S": "TEAM#971387a3-f755-496e-897c-4b4163f7b3c7"
+          },
+          "GSI1PK": {
+            "S": "TEAM#971387a3-f755-496e-897c-4b4163f7b3c7"
+          },
+          "GSI1SK": {
+            "S": "SEASON#7367d7c4-ed2e-4787-9f3a-c6184ee4edae"
+          },
+          "Stats": {
+            "M": {
+              "Shots": {
+                "N": 222
+              },
+              "Kills": {
+                "N": 87
+              }
+            }
+          },
+          "Wins": {
+            "N": "4"
+          },
+          "Losses": {
+            "N": "5"
+          },
+          "PointsFor": {
+            "N": "45"
+          },
+          "PointsAgainst": {
+            "N": "53"
+          }
+        },
+        {
+          "PK": {
+            "S": "SEASON#9c35f5a2-9b4d-49b8-8ad4-ad5f10465f50"
+          },
+          "SK": {
+            "S": "TEAM#971387a3-f755-496e-897c-4b4163f7b3c7"
+          },
+          "GSI1PK": {
+            "S": "TEAM#971387a3-f755-496e-897c-4b4163f7b3c7"
+          },
+          "GSI1SK": {
+            "S": "SEASON#9c35f5a2-9b4d-49b8-8ad4-ad5f10465f50"
+          },
+          "Stats": {
+            "M": {
+              "Shots": {
+                "N": 200
+              },
+              "Kills": {
+                "N": 45
+              }
+            }
+          },
+          "Wins": {
+            "N": "2"
+          },
+          "Losses": {
+            "N": "2"
+          },
+          "PointsFor": {
+            "N": "24"
+          },
+          "PointsAgainst": {
+            "N": "35"
+          }
+        },
+        {
+          "PK": {
+            "S": "SEASON#7367d7c4-ed2e-4787-9f3a-c6184ee4edae"
+          },
+          "SK": {
+            "S": "GAME#c40ccd7a-1ddb-4f11-a58e-118c826418fb"
+          },
+          "GSI1PK": {
+            "S": "SEASON#7367d7c4-ed2e-4787-9f3a-c6184ee4edae"
+          },
+          "GSI1SK": {
+            "S": "GAME#StartDateTime#c40ccd7a-1ddb-4f11-a58e-118c826418fb"
+          },
+          "DogEatDogPoints": {
+            "M": {
+              "94852af8-2d5f-4538-9840-47d0cb1f7a76": {
+                "N": 7
+              },
+              "72e9a410-9051-451f-a306-327fa678595a": {
+                "N": 3
+              }
+            }
+          },
+          "Stats": {
+            "M": {
+              "Shots": {
+                "N": 200
+              },
+              "Kills": {
+                "N": 45
+              }
+            }
+          },
+          "HomeTeam": {
+            "S": "406bf779-f4ce-4c45-8d79-bd3fa3d0a3f7"
+          },
+          "AwayTeam": {
+            "S": "971387a3-f755-496e-897c-4b4163f7b3c7"
+          },
+          "GSI2PK": {
+            "S": "TEAM#406bf779-f4ce-4c45-8d79-bd3fa3d0a3f7"
+          },
+          "GSI2SK": {
+            "S": "GAME#StartDateTime#c40ccd7a-1ddb-4f11-a58e-118c826418fb"
+          },
+          "GSI3PK": {
+            "S": "TEAM#971387a3-f755-496e-897c-4b4163f7b3c7"
+          },
+          "GSI3SK": {
+            "S": "GAME#StartDateTime#c40ccd7a-1ddb-4f11-a58e-118c826418fb"
+          }
+        },
+        {
+          "PK": {
+            "S": "SEASON#7367d7c4-ed2e-4787-9f3a-c6184ee4edae"
+          },
+          "SK": {
+            "S": "GAME#4c13f564-3870-46c3-9f9e-0a4e62b4ab56"
+          },
+          "GSI1PK": {
+            "S": "SEASON#7367d7c4-ed2e-4787-9f3a-c6184ee4edae"
+          },
+          "GSI1SK": {
+            "S": "GAME#StartDateTime#4c13f564-3870-46c3-9f9e-0a4e62b4ab56"
+          },
+          "DogEatDogPoints": {
+            "M": {
+              "94852af8-2d5f-4538-9840-47d0cb1f7a76": {
+                "N": 7
+              },
+              "72e9a410-9051-451f-a306-327fa678595a": {
+                "N": 3
+              }
+            }
+          },
+          "Stats": {
+            "M": {
+              "Shots": {
+                "N": 200
+              },
+              "Kills": {
+                "N": 45
+              }
+            }
+          },
+          "HomeTeam": {
+            "S": "971387a3-f755-496e-897c-4b4163f7b3c7"
+          },
+          "AwayTeam": {
+            "S": "406bf779-f4ce-4c45-8d79-bd3fa3d0a3f7"
+          },
+          "GSI2PK": {
+            "S": "TEAM#971387a3-f755-496e-897c-4b4163f7b3c7"
+          },
+          "GSI2SK": {
+            "S": "GAME#StartDateTime#4c13f564-3870-46c3-9f9e-0a4e62b4ab56"
+          },
+          "GSI3PK": {
+            "S": "TEAM#406bf779-f4ce-4c45-8d79-bd3fa3d0a3f7"
+          },
+          "GSI3SK": {
+            "S": "GAME#StartDateTime#4c13f564-3870-46c3-9f9e-0a4e62b4ab56"
+          }
+        }
+      ],
+      "DataAccess": {
+        "MySql": {}
+      },
+      "SampleDataFormats": {
+        "Wins": [
+          "Int"
+        ],
+        "Losses": [
+          "Int"
+        ],
+        "PointsFor": [
+          "Int"
+        ],
+        "PointsAgainst": [
+          "Int"
+        ]
+      },
+      "BillingMode": "PROVISIONED",
+      "ProvisionedCapacitySettings": {
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 5,
+          "WriteCapacityUnits": 5
+        },
+        "AutoScalingRead": {
+          "ScalableTargetRequest": {
+            "MinCapacity": 1,
+            "MaxCapacity": 10,
+            "ServiceRole": "AWSServiceRoleForApplicationAutoScaling_DynamoDBTable"
+          },
+          "ScalingPolicyConfiguration": {
+            "TargetValue": 70
+          }
+        },
+        "AutoScalingWrite": {
+          "ScalableTargetRequest": {
+            "MinCapacity": 1,
+            "MaxCapacity": 10,
+            "ServiceRole": "AWSServiceRoleForApplicationAutoScaling_DynamoDBTable"
+          },
+          "ScalingPolicyConfiguration": {
+            "TargetValue": 70
+          }
+        }
+      }
+    }
+  ]
+}
