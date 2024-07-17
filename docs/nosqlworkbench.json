@@ -3,7 +3,7 @@
   "ModelMetadata": {
     "Author": "",
     "DateCreated": "Sep 12, 2023, 06:33 PM",
-    "DateLastModified": "Jul 16, 2024, 09:02 PM",
+    "DateLastModified": "Jul 16, 2024, 10:23 PM",
     "Description": "",
     "AWSService": "Amazon DynamoDB",
     "Version": "3.0"
@@ -76,6 +76,18 @@
         },
         {
           "AttributeName": "GSI3SK",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "TeamID",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "PlayerID",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "SeasonID",
           "AttributeType": "S"
         }
       ],
@@ -282,6 +294,41 @@
           },
           "GSI1SK": {
             "S": "PLAYER#94852af8-2d5f-4538-9840-47d0cb1f7a76"
+          },
+          "DogEatDogPoints": {
+            "M": {
+              "Points": {
+                "N": 12
+              },
+              "Wins": {
+                "N": 2
+              },
+              "Second": {
+                "N": 1
+              }
+            }
+          },
+          "Stats": {
+            "M": {
+              "Shots": {
+                "N": 300
+              },
+              "Kills": {
+                "N": 100
+              }
+            }
+          },
+          "Wins": {
+            "N": "12"
+          },
+          "Losses": {
+            "N": "2"
+          },
+          "PointsFor": {
+            "N": "75"
+          },
+          "PointsAgainst": {
+            "N": "21"
           }
         },
         {
@@ -296,6 +343,41 @@
           },
           "GSI1SK": {
             "S": "PLAYER#72e9a410-9051-451f-a306-327fa678595a"
+          },
+          "DogEatDogPoints": {
+            "M": {
+              "Points": {
+                "N": 12
+              },
+              "Wins": {
+                "N": 2
+              },
+              "Second": {
+                "N": 1
+              }
+            }
+          },
+          "Stats": {
+            "M": {
+              "Shots": {
+                "N": 300
+              },
+              "Kills": {
+                "N": 100
+              }
+            }
+          },
+          "Wins": {
+            "N": "10"
+          },
+          "Losses": {
+            "N": "4"
+          },
+          "PointsFor": {
+            "N": "55"
+          },
+          "PointsAgainst": {
+            "N": "32"
           }
         },
         {
@@ -408,7 +490,7 @@
         },
         {
           "PK": {
-            "S": "SEASON#7367d7c4-ed2e-4787-9f3a-c6184ee4edae"
+            "S": "GAME#c40ccd7a-1ddb-4f11-a58e-118c826418fb"
           },
           "SK": {
             "S": "GAME#c40ccd7a-1ddb-4f11-a58e-118c826418fb"
@@ -460,7 +542,7 @@
         },
         {
           "PK": {
-            "S": "SEASON#7367d7c4-ed2e-4787-9f3a-c6184ee4edae"
+            "S": "GAME#4c13f564-3870-46c3-9f9e-0a4e62b4ab56"
           },
           "SK": {
             "S": "GAME#4c13f564-3870-46c3-9f9e-0a4e62b4ab56"
@@ -509,6 +591,79 @@
           "GSI3SK": {
             "S": "GAME#StartDateTime#4c13f564-3870-46c3-9f9e-0a4e62b4ab56"
           }
+        },
+        {
+          "PK": {
+            "S": "GAME#c40ccd7a-1ddb-4f11-a58e-118c826418fb"
+          },
+          "SK": {
+            "S": "STATLINE#PLAYER#94852af8-2d5f-4538-9840-47d0cb1f7a76"
+          },
+          "Stats": {
+            "M": {
+              "Shots": {
+                "N": 200
+              },
+              "Kills": {
+                "N": 45
+              }
+            }
+          },
+          "TeamID": {
+            "S": "406bf779-f4ce-4c45-8d79-bd3fa3d0a3f7"
+          }
+        },
+        {
+          "PK": {
+            "S": "SEASON#7367d7c4-ed2e-4787-9f3a-c6184ee4edae"
+          },
+          "SK": {
+            "S": "ROSTEREDPLAYER#TEAM#971387a3-f755-496e-897c-4b4163f7b3c7#PLAYER#94852af8-2d5f-4538-9840-47d0cb1f7a76"
+          },
+          "GSI1PK": {
+            "S": "PLAYER#94852af8-2d5f-4538-9840-47d0cb1f7a76"
+          },
+          "GSI1SK": {
+            "S": "ROSTEREDPLAYER#SEASON#7367d7c4-ed2e-4787-9f3a-c6184ee4edae#TEAM#971387a3-f755-496e-897c-4b4163f7b3c7"
+          },
+          "DogEatDogPoints": {
+            "M": {
+              "Points": {
+                "N": 12
+              },
+              "Wins": {
+                "N": 2
+              },
+              "Second": {
+                "N": 1
+              }
+            }
+          },
+          "Stats": {
+            "M": {
+              "Shots": {
+                "N": 200
+              },
+              "Kills": {
+                "N": 45
+              }
+            }
+          },
+          "Wins": {
+            "N": "4"
+          },
+          "Losses": {
+            "N": "4"
+          },
+          "TeamID": {
+            "S": "971387a3-f755-496e-897c-4b4163f7b3c7"
+          },
+          "PlayerID": {
+            "S": "94852af8-2d5f-4538-9840-47d0cb1f7a76"
+          },
+          "SeasonID": {
+            "S": "7367d7c4-ed2e-4787-9f3a-c6184ee4edae"
+          }
         }
       ],
       "DataAccess": {
@@ -526,6 +681,18 @@
         ],
         "PointsAgainst": [
           "Int"
+        ],
+        "TeamID": [
+          "identifiers",
+          "UUID"
+        ],
+        "PlayerID": [
+          "identifiers",
+          "UUID"
+        ],
+        "SeasonID": [
+          "identifiers",
+          "UUID"
         ]
       },
       "BillingMode": "PROVISIONED",
