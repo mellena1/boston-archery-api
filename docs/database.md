@@ -72,15 +72,63 @@ PLAYER ||--o{ STATLINE : HAS
 
 ## Dynamo entity primary keys
 
-| Entity           | PK                   | SK                                                |
-| ---------------- | -------------------- | ------------------------------------------------- |
-| Season           | `SEASON${SeasonID}`  | `SEASON${SeasonID}`                               |
-| Team             | `TEAM#${TeamID}`     | `TEAM#${TeamID}`                                  |
-| Season-Team join | `SEASON#${SeasonID}` | `TEAM#${TeamID}`                                  |
-| Player           | `PLAYER#${PlayerID}` | `PLAYER#${PlayerID}`                              |
-| Rostered Player  | `SEASON#${SeasonID}` | `ROSTEREDPLAYER#TEAM#${TeamID}#PLAYER${PlayerID}` |
-| Game             | `Game#${GameID}`     | `Game#${GameID}`                                  |
-| Stat Line        | `GAME#${GameID}`     | `STATLINE#PLAYER#${PlayerId}`                     |
+See [the example nosqlworkbench file](./nosqlworkbench.json) for an example table to mess around with. You can import the JSON into [NoSQL workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html)'s data visualizer.
+
+### Table
+
+| Entity           | PK                   | SK                                                 |
+| ---------------- | -------------------- | -------------------------------------------------- |
+| Season           | `SEASON${SeasonID}`  | `SEASON#${SeasonID}`                               |
+| Team             | `TEAM#${TeamID}`     | `TEAM#${TeamID}`                                   |
+| Season-Team join | `SEASON#${SeasonID}` | `TEAM#${TeamID}`                                   |
+| Player           | `PLAYER#${PlayerID}` | `PLAYER#${PlayerID}`                               |
+| Rostered Player  | `SEASON#${SeasonID}` | `ROSTEREDPLAYER#TEAM#${TeamID}#PLAYER#${PlayerID}` |
+| Game             | `GAME#${GameID}`     | `GAME#${GameID}`                                   |
+| Stat Line        | `GAME#${GameID}`     | `STATLINE#PLAYER#${PlayerId}`                      |
+
+![example table](img/example-table.png)
+
+### GSI1
+
+| Entity           | PK                   | SK                                                 |
+| ---------------- | -------------------- | -------------------------------------------------- |
+| Season           | `SEASONS`            | `SEASON#${StartDate}#${SeasonID}`                  |
+| Team             | `TEAMS`              | `TEAM#${TeamID}`                                   |
+| Season-Team join | `TEAM#${TeamID}`     | `SEASON#${SeasonID}`                               |
+| Player           | `PLAYERS`            | `PLAYER#${PlayerID}`                               |
+| Rostered Player  | `PLAYER#${PlayerID}` | `ROSTEREDPLAYER#SEASON#${SeasonID}#TEAM#${TeamID}` |
+| Game             | `SEASON#${GameID}`   | `GAME#${StartDateTime}#${GameID}`                  |
+| Stat Line        | N/A                  | N/A                                                |
+
+![example gsi1](img/example-gsi1.png)
+
+### GSI2
+
+| Entity           | PK                   | SK                                |
+| ---------------- | -------------------- | --------------------------------- |
+| Season           | N/A                  | N/A                               |
+| Team             | N/A                  | N/A                               |
+| Season-Team join | N/A                  | N/A                               |
+| Player           | N/A                  | N/A                               |
+| Rostered Player  | N/A                  | N/A                               |
+| Game             | `TEAM#${HomeTeamID}` | `GAME#${StartDateTime}#${GameID}` |
+| Stat Line        | N/A                  | N/A                               |
+
+![example gsi2](img/example-gsi2.png)
+
+### GSI3
+
+| Entity           | PK                   | SK                                |
+| ---------------- | -------------------- | --------------------------------- |
+| Season           | N/A                  | N/A                               |
+| Team             | N/A                  | N/A                               |
+| Season-Team join | N/A                  | N/A                               |
+| Player           | N/A                  | N/A                               |
+| Rostered Player  | N/A                  | N/A                               |
+| Game             | `TEAM#${AwayTeamID}` | `GAME#${StartDateTime}#${GameID}` |
+| Stat Line        | N/A                  | N/A                               |
+
+![example gsi3](img/example-gsi3.png)
 
 ## Access patterns
 
