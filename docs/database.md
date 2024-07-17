@@ -74,6 +74,8 @@ PLAYER ||--o{ STATLINE : HAS
 
 See [the example nosqlworkbench file](./nosqlworkbench.json) for an example table to mess around with. You can import the JSON into [NoSQL workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html)'s data visualizer.
 
+Note that all of the example images don't include all of the attributes that entities may have for brevity, and the way that things that stats are stored could be different in implementation (maybe individual attributes instead of a Map).
+
 ### Table
 
 | Entity           | PK                   | SK                                                 |
