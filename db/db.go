@@ -59,7 +59,24 @@ func withQueryKeyConditionExpression(expr expression.Expression) queryInputOptio
 	}
 }
 
-func (db *DB) putItem(ctx context.Context, item any, options ...putItemOption) error {
+type updateInputOption func(input *dynamodb.UpdateItemInput)
+
+func withUpdateExpression(expr expression.Expression) updateInputOption {
+	return func(input *dynamodb.UpdateItemInput) {
+		input.ConditionExpression = expr.Condition()
+		input.UpdateExpression = expr.Update()
+		input.ExpressionAttributeNames = expr.Names()
+		input.ExpressionAttributeValues = expr.Values()
+	}
+}
+
+func withUpdateReturnValues(ret types.ReturnValue) updateInputOption {
+	return func(input *dynamodb.UpdateItemInput) {
+		input.ReturnValues = ret
+	}
+}
+
+func (db *DB) putItem(ctx context.Context, item any, opts ...putItemOption) error {
 	marshaledItem, err := attributevalue.MarshalMap(item)
 	if err != nil {
 		return fmt.Errorf("failed to marshal item: %w", err)
@@ -70,7 +87,7 @@ func (db *DB) putItem(ctx context.Context, item any, options ...putItemOption) e
 		Item:      marshaledItem,
 	}
 
-	for _, opt := range options {
+	for _, opt := range opts {
 		opt(input)
 	}
 
@@ -80,6 +97,27 @@ func (db *DB) putItem(ctx context.Context, item any, options ...putItemOption) e
 	}
 
 	return nil
+}
+
+func (db *DB) updateItem(ctx context.Context, PK string, SK string, opts ...updateInputOption) (*dynamodb.UpdateItemOutput, error) {
+	input := &dynamodb.UpdateItemInput{
+		TableName: &db.tableName,
+		Key: map[string]types.AttributeValue{
+			tablekeys.PK: &types.AttributeValueMemberS{Value: PK},
+			tablekeys.SK: &types.AttributeValueMemberS{Value: SK},
+		},
+	}
+
+	for _, opt := range opts {
+		opt(input)
+	}
+
+	result, err := db.dynamoClient.UpdateItem(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("error with UpdateItem call: %w", err)
+	}
+
+	return result, nil
 }
 
 func (db *DB) getItem(ctx context.Context, PK string, SK string, v any) error {
@@ -101,11 +139,11 @@ func (db *DB) getItem(ctx context.Context, PK string, SK string, v any) error {
 	return attributevalue.UnmarshalMap(resp.Item, v)
 }
 
-func (db *DB) getManyOfEntity(ctx context.Context, v any, options ...queryInputOption) error {
+func (db *DB) getManyOfEntity(ctx context.Context, v any, opts ...queryInputOption) error {
 	query := &dynamodb.QueryInput{
 		TableName: &db.tableName,
 	}
-	for _, opt := range options {
+	for _, opt := range opts {
 		opt(query)
 	}
 

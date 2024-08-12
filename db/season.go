@@ -2,9 +2,12 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/google/uuid"
 	"github.com/mellena1/boston-archery-api/db/tablekeys"
 	"github.com/mellena1/boston-archery-api/model"
@@ -29,9 +32,7 @@ func (s seasonDynamoItem) toSeason() model.Season {
 		Name:      s.Name,
 		StartDate: stringToDate(s.StartDate),
 		EndDate:   stringToDate(s.EndDate),
-		ByeWeeks: slices.Map(s.ByeWeeks, func(s string) time.Time {
-			return stringToDate(s)
-		}),
+		ByeWeeks:  strSliceToDates(s.ByeWeeks),
 	}
 }
 
@@ -41,13 +42,12 @@ func seasonToDynamoItem(season model.Season) seasonDynamoItem {
 		PK:        pk,
 		SK:        pk,
 		GSI1PK:    tablekeys.SEASON_GSI1_PK,
-		GSI1SK:    pk,
+		GSI1SK:    seasonGSI1SK(season.ID, season.StartDate),
+		ID:        season.ID.String(),
 		Name:      season.Name,
 		StartDate: dateToString(season.StartDate),
 		EndDate:   dateToString(season.EndDate),
-		ByeWeeks: slices.Map(season.ByeWeeks, func(t time.Time) string {
-			return dateToString(t)
-		}),
+		ByeWeeks:  dateSliceToStrs(season.ByeWeeks),
 	}
 }
 
@@ -61,19 +61,66 @@ func (db *DB) AddSeason(ctx context.Context, season model.Season) (*model.Season
 	return db.putSeason(ctx, season, putExpr)
 }
 
-func (db *DB) UpdateSeason(ctx context.Context, season model.Season) (*model.Season, error) {
-	putCond := expression.AttributeExists(expression.Name(tablekeys.PK))
-	putExpr, err := expression.NewBuilder().WithCondition(putCond).Build()
-	if err != nil {
-		panic("updateseason condition is invalid")
+type UpdateSeasonInput struct {
+	Name      *string
+	StartDate *time.Time
+	EndDate   *time.Time
+	ByeWeeks  *[]time.Time
+}
+
+func (db *DB) UpdateSeason(ctx context.Context, id uuid.UUID, updates UpdateSeasonInput) (*model.Season, error) {
+	cond := expression.AttributeExists(expression.Name(tablekeys.PK))
+	var update expression.UpdateBuilder
+
+	if updates.Name != nil {
+		update = update.Set(
+			expression.Name("Name"),
+			expression.Value(*updates.Name),
+		)
+	}
+	if updates.StartDate != nil {
+		update = update.Set(
+			expression.Name("StartDate"),
+			expression.Value(dateToString(*updates.StartDate)),
+		).Set(
+			expression.Name(tablekeys.GSI1SK),
+			expression.Value(seasonGSI1SK(id, *updates.StartDate)),
+		)
+	}
+	if updates.EndDate != nil {
+		update = update.Set(
+			expression.Name("EndDate"),
+			expression.Value(dateToString(*updates.EndDate)),
+		)
+	}
+	if updates.ByeWeeks != nil {
+		update = update.Set(
+			expression.Name("ByeWeeks"),
+			expression.Value(dateSliceToStrs(*updates.ByeWeeks)),
+		)
 	}
 
-	_, err = db.putSeason(ctx, season, putExpr)
+	expr, err := expression.NewBuilder().
+		WithCondition(cond).
+		WithUpdate(update).
+		Build()
 	if err != nil {
-		return nil, err
+		panic("updateseason condition is invalid: " + err.Error())
 	}
 
-	return &season, nil
+	result, err := db.updateItem(ctx, seasonPK(id.String()), seasonPK(id.String()), withUpdateExpression(expr), withUpdateReturnValues(types.ReturnValueAllNew))
+	if err != nil {
+		return nil, fmt.Errorf("error updating season: %w", err)
+	}
+
+	var dynamoItem seasonDynamoItem
+	err = attributevalue.UnmarshalMap(result.Attributes, &dynamoItem)
+	if err != nil {
+		return nil, fmt.Errorf("error reading result of season upate: %w", err)
+	}
+
+	seasonResult := dynamoItem.toSeason()
+	return &seasonResult, nil
 }
 
 func (db *DB) putSeason(ctx context.Context, season model.Season, cond expression.Expression) (*model.Season, error) {
@@ -113,8 +160,6 @@ func (db *DB) GetAllSeasons(ctx context.Context) ([]model.Season, error) {
 		return nil, err
 	}
 
-	// TODO: error handling
-
 	seasons := slices.Map(seasonItems, func(item seasonDynamoItem) model.Season {
 		return item.toSeason()
 	})
@@ -123,4 +168,8 @@ func (db *DB) GetAllSeasons(ctx context.Context) ([]model.Season, error) {
 
 func seasonPK(key string) string {
 	return tablekeys.SEASON_KEY_PREFIX + key
+}
+
+func seasonGSI1SK(id uuid.UUID, startDate time.Time) string {
+	return seasonPK(fmt.Sprintf("%s#%s", dateToString(startDate), id.String()))
 }

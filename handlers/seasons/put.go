@@ -11,7 +11,7 @@ import (
 	"github.com/mellena1/boston-archery-api/db"
 	"github.com/mellena1/boston-archery-api/handlers"
 	handlerErrors "github.com/mellena1/boston-archery-api/handlers/errors"
-	"github.com/mellena1/boston-archery-api/model"
+	"github.com/mellena1/boston-archery-api/ptr"
 	"github.com/mellena1/boston-archery-api/slices"
 )
 
@@ -73,14 +73,13 @@ func (a *API) PutSeason(c *gin.Context) {
 		return
 	}
 
-	season, err := a.db.UpdateSeason(c.Request.Context(), model.Season{
-		ID:        input.ID,
-		Name:      input.Body.Name,
-		StartDate: input.Body.StartDate.ToTime(),
-		EndDate:   input.Body.EndDate.ToTime(),
-		ByeWeeks: slices.Map(input.Body.ByeWeeks, func(v handlers.Date) time.Time {
+	season, err := a.db.UpdateSeason(c.Request.Context(), input.ID, db.UpdateSeasonInput{
+		Name:      &input.Body.Name,
+		StartDate: ptr.Ptr(input.Body.StartDate.ToTime()),
+		EndDate:   ptr.Ptr(input.Body.EndDate.ToTime()),
+		ByeWeeks: ptr.Ptr(slices.Map(input.Body.ByeWeeks, func(v handlers.Date) time.Time {
 			return v.ToTime()
-		}),
+		})),
 	})
 	if err != nil {
 		switch {

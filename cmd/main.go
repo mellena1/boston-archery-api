@@ -18,6 +18,7 @@ package main
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -71,6 +72,13 @@ func init() {
 		AllowOrigins:  []string{"http://localhost:*"},
 		AllowHeaders:  []string{"Authorization", "Content-Type"},
 		AllowWildcard: true,
+		AllowMethods: []string{
+			http.MethodGet,
+			http.MethodHead,
+			http.MethodOptions,
+			http.MethodPost,
+			http.MethodPut,
+		},
 	}))
 
 	apiV1Group := r.Group("/api/v1")

@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 services:
   dynamodb:
     image: "amazon/dynamodb-local:latest"
@@ -25,7 +25,6 @@ services:
         --attribute-definitions
           AttributeName=PK,AttributeType=S
           AttributeName=SK,AttributeType=S
-          AttributeName=EntityType,AttributeType=S
           AttributeName=GSI1PK,AttributeType=S
           AttributeName=GSI1SK,AttributeType=S
         --key-schema
@@ -33,16 +32,6 @@ services:
           AttributeName=SK,KeyType=RANGE
         --global-secondary-indexes
           '[
-            {
-              "IndexName": "EntityTypeGSI",
-              "KeySchema": [
-                {"AttributeName": "EntityType", "KeyType": "HASH"},
-                {"AttributeName": "PK", "KeyType": "RANGE"}
-              ],
-              "Projection": {
-                "ProjectionType": "ALL"
-              }
-            },
             {
               "IndexName": "GSI1",
               "KeySchema": [
@@ -54,7 +43,7 @@ services:
               }
             }
           ]'
-  
+
 networks:
   boston-archery:
     name: boston-archery
