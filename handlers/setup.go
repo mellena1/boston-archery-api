@@ -41,7 +41,7 @@ func NewDB(ctx context.Context) (*db.DB, error) {
 		return nil, fmt.Errorf("failed to create dynamo client: %w", err)
 	}
 
-	database := db.NewDB(os.Getenv("ARCHERY_TABLE_NAME"), "EntityTypeGSI", dynamoClient)
+	database := db.NewDB(os.Getenv("ARCHERY_TABLE_NAME"), dynamoClient)
 	return database, nil
 }
 

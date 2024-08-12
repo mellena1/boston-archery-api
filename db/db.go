@@ -20,16 +20,14 @@ type DynamoDBClient interface {
 }
 
 type DB struct {
-	tableName           string
-	entityTypeIndexName string
-	dynamoClient        DynamoDBClient
+	tableName    string
+	dynamoClient DynamoDBClient
 }
 
-func NewDB(tableName string, entityTypeIndexName string, dynamoClient DynamoDBClient) *DB {
+func NewDB(tableName string, dynamoClient DynamoDBClient) *DB {
 	return &DB{
-		tableName:           tableName,
-		entityTypeIndexName: entityTypeIndexName,
-		dynamoClient:        dynamoClient,
+		tableName:    tableName,
+		dynamoClient: dynamoClient,
 	}
 }
 
