@@ -5,7 +5,7 @@ func Map[T any, U any](s []T, f func(T) U) []U {
 		return nil
 	}
 
-	newS := []U{}
+	newS := make([]U, len(s))
 	for _, item := range s {
 		newS = append(newS, f(item))
 	}

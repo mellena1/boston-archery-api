@@ -83,16 +83,7 @@ func (db *DB) GetPlayer(ctx context.Context, id uuid.UUID) (*model.Player, error
 }
 
 func (db *DB) GetAllPlayers(ctx context.Context) ([]model.Player, error) {
-	var playerItems []playerDynamoItem
-	err := db.getAllOfEntity(ctx, playerEntityType, &playerItems)
-	if err != nil {
-		return nil, err
-	}
+	// TODO:
 
-	players := make([]model.Player, len(playerItems))
-	for i, item := range playerItems {
-		players[i] = item.toPlayer()
-	}
-
-	return players, nil
+	return []model.Player{}, nil
 }

@@ -32,16 +32,48 @@ func NewDB(tableName string, entityTypeIndexName string, dynamoClient DynamoDBCl
 	}
 }
 
-func (db *DB) putItem(ctx context.Context, item any) error {
+type putItemOption func(input *dynamodb.PutItemInput)
+
+func withPutItemConditionExpression(expr expression.Expression) putItemOption {
+	return func(input *dynamodb.PutItemInput) {
+		input.ExpressionAttributeNames = expr.Names()
+		input.ExpressionAttributeValues = expr.Values()
+		input.ConditionExpression = expr.Condition()
+	}
+}
+
+type queryInputOption func(query *dynamodb.QueryInput)
+
+func withQueryIndex(indexName string) queryInputOption {
+	return func(query *dynamodb.QueryInput) {
+		query.IndexName = &indexName
+	}
+}
+
+func withQueryKeyConditionExpression(expr expression.Expression) queryInputOption {
+	return func(query *dynamodb.QueryInput) {
+		query.KeyConditionExpression = expr.KeyCondition()
+		query.ExpressionAttributeNames = expr.Names()
+		query.ExpressionAttributeValues = expr.Values()
+	}
+}
+
+func (db *DB) putItem(ctx context.Context, item any, options ...putItemOption) error {
 	marshaledItem, err := attributevalue.MarshalMap(item)
 	if err != nil {
 		return fmt.Errorf("failed to marshal item: %w", err)
 	}
 
-	_, err = db.dynamoClient.PutItem(ctx, &dynamodb.PutItemInput{
+	input := &dynamodb.PutItemInput{
 		TableName: &db.tableName,
 		Item:      marshaledItem,
-	})
+	}
+
+	for _, opt := range options {
+		opt(input)
+	}
+
+	_, err = db.dynamoClient.PutItem(ctx, input)
 	if err != nil {
 		return fmt.Errorf("error with PutItem call: %w", err)
 	}
@@ -68,23 +100,18 @@ func (db *DB) getItem(ctx context.Context, PK string, SK string, v any) error {
 	return attributevalue.UnmarshalMap(resp.Item, v)
 }
 
-func (db *DB) getAllOfEntity(ctx context.Context, entityType string, vs any) error {
-	keyCond := expression.Key(tablekeys.ENTITY_TYPE).Equal(expression.Value(entityType))
-	expr, err := expression.NewBuilder().WithKeyCondition(keyCond).Build()
-	if err != nil {
-		return fmt.Errorf("making entity expression failed")
+func (db *DB) getManyOfEntity(ctx context.Context, v any, options ...queryInputOption) error {
+	query := &dynamodb.QueryInput{
+		TableName: &db.tableName,
+	}
+	for _, opt := range options {
+		opt(query)
 	}
 
-	resp, err := db.dynamoClient.Query(ctx, &dynamodb.QueryInput{
-		TableName:                 &db.tableName,
-		IndexName:                 &db.entityTypeIndexName,
-		KeyConditionExpression:    expr.KeyCondition(),
-		ExpressionAttributeNames:  expr.Names(),
-		ExpressionAttributeValues: expr.Values(),
-	})
+	resp, err := db.dynamoClient.Query(ctx, query)
 	if err != nil {
-		return fmt.Errorf("query on entity GSI failed: %w", err)
+		return fmt.Errorf("getManyOfEntity query failed: %w", err)
 	}
 
-	return attributevalue.UnmarshalListOfMaps(resp.Items, vs)
+	return attributevalue.UnmarshalListOfMaps(resp.Items, v)
 }

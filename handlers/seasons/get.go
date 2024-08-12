@@ -1,13 +1,11 @@
 package seasons
 
 import (
-	"errors"
 	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mellena1/boston-archery-api/db"
 	handlerErrors "github.com/mellena1/boston-archery-api/handlers/errors"
 	"github.com/mellena1/boston-archery-api/model"
 	"github.com/mellena1/boston-archery-api/slices"
@@ -18,10 +16,7 @@ var failedToFetchSeasonsError = handlerErrors.Error{
 }
 
 // swagger:parameters getSeasons
-type GetSeasonsInput struct {
-	// in:query
-	Name *string `form:"name"`
-}
+type GetSeasonsInput struct{}
 
 // swagger:model GetSeasonsResp
 type GetSeasonsResp struct {
@@ -64,11 +59,6 @@ func (a *API) GetSeasons(c *gin.Context) {
 		return
 	}
 
-	if input.Name != nil {
-		a.getSeasonByName(c, input)
-		return
-	}
-
 	a.getAllSeasons(c)
 }
 
@@ -84,23 +74,5 @@ func (a *API) getAllSeasons(c *gin.Context) {
 		Data: slices.Map(seasons, func(s model.Season) Season {
 			return seasonFromModel(s)
 		}),
-	})
-}
-
-func (a *API) getSeasonByName(c *gin.Context, input GetSeasonsInput) {
-	season, err := a.db.GetSeasonByName(c.Request.Context(), *input.Name)
-	if err != nil {
-		switch {
-		case errors.Is(err, db.ErrItemNotFound):
-			c.AbortWithStatusJSON(http.StatusNotFound, handlerErrors.NotFoundError)
-		default:
-			a.logger.ErrorContext(c, "failed to get seasons", slog.String("error", err.Error()))
-			c.AbortWithStatusJSON(http.StatusInternalServerError, failedToFetchSeasonsError)
-		}
-		return
-	}
-
-	c.JSON(http.StatusOK, GetSeasonsResp{
-		Data: []Season{seasonFromModel(*season)},
 	})
 }

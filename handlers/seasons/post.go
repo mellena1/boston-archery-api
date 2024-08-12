@@ -8,9 +8,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/mellena1/boston-archery-api/db"
 	"github.com/mellena1/boston-archery-api/handlers"
 	handlerErrors "github.com/mellena1/boston-archery-api/handlers/errors"
+	"github.com/mellena1/boston-archery-api/model"
 	"github.com/mellena1/boston-archery-api/slices"
 )
 
@@ -60,7 +62,8 @@ func (a *API) PostSeason(c *gin.Context) {
 		return
 	}
 
-	season, err := a.db.AddSeason(c.Request.Context(), db.SeasonInput{
+	season, err := a.db.PutSeason(c.Request.Context(), model.Season{
+		ID:        uuid.New(),
 		Name:      input.Body.Name,
 		StartDate: input.Body.StartDate.ToTime(),
 		EndDate:   input.Body.EndDate.ToTime(),
