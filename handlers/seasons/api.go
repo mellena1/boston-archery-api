@@ -9,7 +9,8 @@ import (
 )
 
 type SeasonDB interface {
-	PutSeason(ctx context.Context, season model.Season) (*model.Season, error)
+	AddSeason(ctx context.Context, season model.Season) (*model.Season, error)
+	UpdateSeason(ctx context.Context, season model.Season) (*model.Season, error)
 	GetAllSeasons(ctx context.Context) ([]model.Season, error)
 	GetSeason(ctx context.Context, uuid uuid.UUID) (*model.Season, error)
 }

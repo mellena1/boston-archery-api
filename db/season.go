@@ -51,24 +51,38 @@ func seasonToDynamoItem(season model.Season) seasonDynamoItem {
 	}
 }
 
-func (db *DB) PutSeason(ctx context.Context, season model.Season) (*model.Season, error) {
-	dynamoItem := seasonToDynamoItem(season)
-
-	// TODO: this won't work for update, need to split these back out
-	cond := expression.AttributeNotExists(expression.Name("name")).And(expression.AttributeNotExists((expression.Name(tablekeys.PK))))
-	expr, err := expression.NewBuilder().WithCondition(cond).Build()
+func (db *DB) AddSeason(ctx context.Context, season model.Season) (*model.Season, error) {
+	putCond := expression.AttributeNotExists(expression.Name(tablekeys.PK))
+	putExpr, err := expression.NewBuilder().WithCondition(putCond).Build()
 	if err != nil {
-		panic("putSeason condition is invalid")
+		panic("addseason condition is invalid")
 	}
 
-	err = db.putItem(ctx, dynamoItem, withPutItemConditionExpression(expr))
+	return db.putSeason(ctx, season, putExpr)
+}
+
+func (db *DB) UpdateSeason(ctx context.Context, season model.Season) (*model.Season, error) {
+	putCond := expression.AttributeExists(expression.Name(tablekeys.PK))
+	putExpr, err := expression.NewBuilder().WithCondition(putCond).Build()
+	if err != nil {
+		panic("updateseason condition is invalid")
+	}
+
+	_, err = db.putSeason(ctx, season, putExpr)
 	if err != nil {
 		return nil, err
 	}
-	// TODO: figure out error handling
 
-	resultSeason := dynamoItem.toSeason()
-	return &resultSeason, nil
+	return &season, nil
+}
+
+func (db *DB) putSeason(ctx context.Context, season model.Season, cond expression.Expression) (*model.Season, error) {
+	err := db.putItem(ctx, seasonToDynamoItem(season), withPutItemConditionExpression(cond))
+	if err != nil {
+		return nil, err
+	}
+
+	return &season, nil
 }
 
 func (db *DB) GetSeason(ctx context.Context, uuid uuid.UUID) (*model.Season, error) {

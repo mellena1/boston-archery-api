@@ -73,7 +73,7 @@ func (a *API) PutSeason(c *gin.Context) {
 		return
 	}
 
-	season, err := a.db.PutSeason(c.Request.Context(), model.Season{
+	season, err := a.db.UpdateSeason(c.Request.Context(), model.Season{
 		ID:        input.ID,
 		Name:      input.Body.Name,
 		StartDate: input.Body.StartDate.ToTime(),
