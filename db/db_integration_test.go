@@ -10,6 +10,8 @@ import (
 
 	dynamodblocal "github.com/abhirockzz/dynamodb-local-testcontainers-go"
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/mellena1/boston-archery-api/db/tablekeys"
@@ -35,6 +37,42 @@ func TestMain(m *testing.M) {
 }
 
 func setupDynamo(ctx context.Context) error {
+	if _, ok := os.LookupEnv("TEST_IN_CI"); ok {
+		return setupDynamoInCI(ctx)
+	}
+
+	return setupDynamoTestContainers(ctx)
+}
+
+func setupDynamoInCI(ctx context.Context) error {
+	cfg, err := config.LoadDefaultConfig(ctx,
+		config.WithRegion("localhost"),
+		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
+			Value: aws.Credentials{
+				AccessKeyID: "local", SecretAccessKey: "local", SessionToken: "",
+				Source: "Mock credentials used above for local instance",
+			},
+		}),
+	)
+	if err != nil {
+		return fmt.Errorf("aws config error: %w", err)
+	}
+
+	dynamoClient = dynamodb.NewFromConfig(cfg, func(o *dynamodb.Options) {
+		o.BaseEndpoint = aws.String("http://dynamodb:8000")
+	})
+
+	err = makeTable(ctx)
+	if err != nil {
+		return err
+	}
+
+	db = NewDB(tableName, dynamoClient)
+
+	return nil
+}
+
+func setupDynamoTestContainers(ctx context.Context) error {
 	var err error
 	dynamodbTestContainer, err = dynamodblocal.RunContainer(ctx)
 	if err != nil {

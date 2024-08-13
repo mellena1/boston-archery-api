@@ -27,3 +27,7 @@ swagger-serve: swagger
 .PHONY: test
 test:
 	go test -cover -tags=integration ./...
+
+.PHONY: test-in-ci
+test-in-ci:
+	TEST_IN_CI=true make test

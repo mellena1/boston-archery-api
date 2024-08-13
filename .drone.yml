@@ -17,8 +17,17 @@ steps:
     - name: deps
       path: /go
   commands:
-  - make test
+  - make test-in-ci
 
 volumes:
 - name: deps
   temp: {}
+
+services:
+- name: dynamodb
+  image: amazon/dynamodb-local
+  command: 
+   - -jar
+   - DynamoDBLocal.jar
+   - -sharedDb
+   - -inMemory
