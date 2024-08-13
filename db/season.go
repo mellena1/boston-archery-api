@@ -58,7 +58,12 @@ func (db *DB) AddSeason(ctx context.Context, season model.Season) (*model.Season
 		panic("addseason condition is invalid")
 	}
 
-	return db.putSeason(ctx, season, putExpr)
+	err = db.putItem(ctx, seasonToDynamoItem(season), withPutItemConditionExpression(putExpr))
+	if err != nil {
+		return nil, err
+	}
+
+	return &season, nil
 }
 
 type UpdateSeasonInput struct {
@@ -121,15 +126,6 @@ func (db *DB) UpdateSeason(ctx context.Context, id uuid.UUID, updates UpdateSeas
 
 	seasonResult := dynamoItem.toSeason()
 	return &seasonResult, nil
-}
-
-func (db *DB) putSeason(ctx context.Context, season model.Season, cond expression.Expression) (*model.Season, error) {
-	err := db.putItem(ctx, seasonToDynamoItem(season), withPutItemConditionExpression(cond))
-	if err != nil {
-		return nil, err
-	}
-
-	return &season, nil
 }
 
 func (db *DB) GetSeason(ctx context.Context, uuid uuid.UUID) (*model.Season, error) {

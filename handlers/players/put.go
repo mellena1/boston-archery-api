@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/mellena1/boston-archery-api/db"
 	handlerErrors "github.com/mellena1/boston-archery-api/handlers/errors"
+	"github.com/mellena1/boston-archery-api/ptr"
 )
 
 var failedToUpdatePlayerError = handlerErrors.Error{
@@ -60,9 +61,9 @@ func (a *API) PutPlayer(c *gin.Context) {
 		return
 	}
 
-	player, err := a.db.UpdatePlayer(c.Request.Context(), input.ID, db.PlayerInput{
-		FirstName: input.Body.FirstName,
-		LastName:  input.Body.LastName,
+	player, err := a.db.UpdatePlayer(c.Request.Context(), input.ID, db.UpdatePlayerInput{
+		FirstName: ptr.Ptr(input.Body.FirstName),
+		LastName:  ptr.Ptr(input.Body.LastName),
 	})
 	if err != nil {
 		switch {
@@ -70,7 +71,7 @@ func (a *API) PutPlayer(c *gin.Context) {
 			c.AbortWithStatusJSON(http.StatusConflict, handlerErrors.AlreadyExistsError)
 		default:
 			a.logger.ErrorContext(c, "failed to add player to db", slog.String("error", err.Error()))
-			c.AbortWithStatusJSON(http.StatusInternalServerError, failedToAddPlayerError)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failedToUpdatePlayerError)
 		}
 		return
 	}

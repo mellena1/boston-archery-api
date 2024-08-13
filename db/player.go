@@ -2,44 +2,45 @@ package db
 
 import (
 	"context"
-	"strings"
+	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/google/uuid"
 	"github.com/mellena1/boston-archery-api/db/tablekeys"
 	"github.com/mellena1/boston-archery-api/model"
+	"github.com/mellena1/boston-archery-api/slices"
 )
 
-const playerEntityType = "Player"
-
 type playerDynamoItem struct {
-	PK         string
-	SK         string
-	EntityType string
-	FirstName  string
-	LastName   string
+	PK        string
+	SK        string
+	GSI1PK    string
+	GSI1SK    string
+	ID        string
+	FirstName string
+	LastName  string
 }
 
 func (p playerDynamoItem) toPlayer() model.Player {
 	return model.Player{
-		ID:        uuid.MustParse(strings.Split(p.PK, "#")[1]),
+		ID:        uuid.MustParse(p.ID),
 		FirstName: p.FirstName,
 		LastName:  p.LastName,
 	}
 }
 
-type PlayerInput struct {
-	FirstName string
-	LastName  string
-}
-
-func (p PlayerInput) toDynamoItem(id uuid.UUID) playerDynamoItem {
-	key := playerPK(id.String())
+func playerToDynamoItem(player model.Player) playerDynamoItem {
+	key := playerPK(player.ID.String())
 	return playerDynamoItem{
-		PK:         key,
-		SK:         key,
-		EntityType: playerEntityType,
-		FirstName:  p.FirstName,
-		LastName:   p.LastName,
+		PK:        key,
+		SK:        key,
+		GSI1PK:    tablekeys.PLAYER_GSI1_PK,
+		GSI1SK:    key,
+		ID:        player.ID.String(),
+		FirstName: player.FirstName,
+		LastName:  player.LastName,
 	}
 }
 
@@ -47,26 +48,61 @@ func playerPK(key string) string {
 	return tablekeys.PLAYER_KEY_PREFIX + key
 }
 
-func (db *DB) AddPlayer(ctx context.Context, newPlayer PlayerInput) (*model.Player, error) {
-	dynamoItem := newPlayer.toDynamoItem(uuid.New())
-	err := db.putItem(ctx, dynamoItem)
+func (db *DB) AddPlayer(ctx context.Context, newPlayer model.Player) (*model.Player, error) {
+	dynamoItem := playerToDynamoItem(newPlayer)
+
+	putCond := expression.AttributeNotExists(expression.Name(tablekeys.PK))
+	putExpr, err := expression.NewBuilder().WithCondition(putCond).Build()
+	if err != nil {
+		panic("addplayer condition is broken: " + err.Error())
+	}
+
+	err = db.putItem(ctx, dynamoItem, withPutItemConditionExpression(putExpr))
 	if err != nil {
 		return nil, err
 	}
 
-	player := dynamoItem.toPlayer()
-	return &player, nil
+	return &newPlayer, nil
 }
 
-func (db *DB) UpdatePlayer(ctx context.Context, id uuid.UUID, player PlayerInput) (*model.Player, error) {
-	dynamoItem := player.toDynamoItem(uuid.New())
-	err := db.putItem(ctx, dynamoItem)
+type UpdatePlayerInput struct {
+	FirstName *string
+	LastName  *string
+}
+
+func (db *DB) UpdatePlayer(ctx context.Context, id uuid.UUID, updates UpdatePlayerInput) (*model.Player, error) {
+	existsCond := expression.AttributeExists(expression.Name(tablekeys.PK))
+	var update expression.UpdateBuilder
+
+	if updates.FirstName != nil {
+		update = update.Set(expression.Name("FirstName"), expression.Value(*updates.FirstName))
+	}
+	if updates.LastName != nil {
+		update = update.Set(expression.Name("LastName"), expression.Value(*updates.LastName))
+	}
+
+	expr, err := expression.NewBuilder().
+		WithCondition(existsCond).
+		WithUpdate(update).
+		Build()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build expression for updatePlayer: %w", err)
+	}
+
+	key := playerPK(id.String())
+	result, err := db.updateItem(ctx, key, key, withUpdateExpression(expr), withUpdateReturnValues(types.ReturnValueAllNew))
 	if err != nil {
 		return nil, err
 	}
 
-	updatedPlayer := dynamoItem.toPlayer()
-	return &updatedPlayer, nil
+	var dynamoItem playerDynamoItem
+	err = attributevalue.UnmarshalMap(result.Attributes, &dynamoItem)
+	if err != nil {
+		return nil, fmt.Errorf("error reading result of player upate: %w", err)
+	}
+
+	playerResult := dynamoItem.toPlayer()
+	return &playerResult, nil
 }
 
 func (db *DB) GetPlayer(ctx context.Context, id uuid.UUID) (*model.Player, error) {
@@ -83,7 +119,21 @@ func (db *DB) GetPlayer(ctx context.Context, id uuid.UUID) (*model.Player, error
 }
 
 func (db *DB) GetAllPlayers(ctx context.Context) ([]model.Player, error) {
-	// TODO:
+	keyCond := expression.Key(tablekeys.GSI1PK).Equal(expression.Value(tablekeys.PLAYER_GSI1_PK))
+	expr, err := expression.NewBuilder().WithKeyCondition(keyCond).Build()
+	if err != nil {
+		panic("get all players key condition broken: " + err.Error())
+	}
 
-	return []model.Player{}, nil
+	var playerItems []playerDynamoItem
+	err = db.getManyOfEntity(ctx, &playerItems, withQueryKeyConditionExpression(expr), withQueryIndex(tablekeys.GSI1_INDEX))
+	if err != nil {
+		return nil, err
+	}
+
+	players := slices.Map(playerItems, func(item playerDynamoItem) model.Player {
+		return item.toPlayer()
+	})
+
+	return players, nil
 }

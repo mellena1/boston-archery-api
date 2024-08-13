@@ -6,8 +6,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/mellena1/boston-archery-api/db"
 	handlerErrors "github.com/mellena1/boston-archery-api/handlers/errors"
+	"github.com/mellena1/boston-archery-api/model"
 )
 
 var failedToAddPlayerError = handlerErrors.Error{
@@ -47,7 +49,8 @@ func (a *API) PostPlayer(c *gin.Context) {
 		return
 	}
 
-	player, err := a.db.AddPlayer(c.Request.Context(), db.PlayerInput{
+	player, err := a.db.AddPlayer(c.Request.Context(), model.Player{
+		ID:        uuid.New(),
 		FirstName: input.Body.FirstName,
 		LastName:  input.Body.LastName,
 	})

@@ -61,7 +61,7 @@ func Test_CRUDSeason(t *testing.T) {
 	_, err = db.UpdateSeason(ctx, uuid.New(), UpdateSeasonInput{
 		Name: ptr.Ptr("Winter 2024"),
 	})
-	require.Error(t, err, "tryin got update non-existing season should fail")
+	require.Error(t, err, "trying to update non-existing season should fail")
 }
 
 func Test_GetAllSeasons(t *testing.T) {

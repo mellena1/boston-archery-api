@@ -10,10 +10,10 @@ import (
 )
 
 type PlayerDB interface {
-	AddPlayer(ctx context.Context, newPLayer db.PlayerInput) (*model.Player, error)
+	AddPlayer(ctx context.Context, newPlayer model.Player) (*model.Player, error)
 	GetPlayer(ctx context.Context, id uuid.UUID) (*model.Player, error)
 	GetAllPlayers(ctx context.Context) ([]model.Player, error)
-	UpdatePlayer(ctx context.Context, id uuid.UUID, Player db.PlayerInput) (*model.Player, error)
+	UpdatePlayer(ctx context.Context, id uuid.UUID, Player db.UpdatePlayerInput) (*model.Player, error)
 }
 
 type API struct {
