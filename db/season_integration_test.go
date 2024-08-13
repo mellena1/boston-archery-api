@@ -4,6 +4,7 @@ package db
 
 import (
 	"context"
+	"sort"
 	"testing"
 	"time"
 
@@ -83,6 +84,7 @@ func Test_GetAllSeasons(t *testing.T) {
 			EndDate:   stringToDate("2024-12-31"),
 		},
 	}
+	sort.Slice(seasons, func(i, j int) bool { return seasons[i].StartDate.Before(seasons[j].StartDate) })
 
 	for _, s := range seasons {
 		_, err := db.AddSeason(ctx, s)

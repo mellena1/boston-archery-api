@@ -4,6 +4,7 @@ package db
 
 import (
 	"context"
+	"sort"
 	"testing"
 
 	"github.com/google/uuid"
@@ -72,6 +73,7 @@ func Test_GetAllPlayers(t *testing.T) {
 			LastName:  "Chase",
 		},
 	}
+	sort.Slice(players, func(i, j int) bool { return players[i].ID.String() < players[j].ID.String() })
 
 	for _, p := range players {
 		_, err := db.AddPlayer(ctx, p)
