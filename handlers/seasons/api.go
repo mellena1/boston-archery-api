@@ -13,7 +13,7 @@ type SeasonDB interface {
 	AddSeason(ctx context.Context, season model.Season) (*model.Season, error)
 	UpdateSeason(ctx context.Context, id uuid.UUID, updates db.UpdateSeasonInput) (*model.Season, error)
 	GetAllSeasons(ctx context.Context) ([]model.Season, error)
-	GetSeason(ctx context.Context, uuid uuid.UUID) (*model.Season, error)
+	GetSeason(ctx context.Context, id uuid.UUID) (*model.Season, error)
 }
 
 type API struct {

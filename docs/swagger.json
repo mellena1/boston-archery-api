@@ -335,18 +335,151 @@
         ],
         "summary": "Get all seasons.",
         "operationId": "getSeasons",
-        "parameters": [
-          {
-            "type": "string",
-            "name": "Name",
-            "in": "query"
-          }
-        ],
         "responses": {
           "200": {
             "description": "GetSeasonsResp",
             "schema": {
               "$ref": "#/definitions/GetSeasonsResp"
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/team": {
+      "post": {
+        "tags": [
+          "team"
+        ],
+        "summary": "Add a new team.",
+        "operationId": "postTeam",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "name",
+                "teamColors"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "x-go-name": "Name"
+                },
+                "teamColors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "x-go-name": "TeamColors"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PostTeamResp",
+            "schema": {
+              "$ref": "#/definitions/PostTeamResp"
+            }
+          },
+          "400": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/team/{ID}": {
+      "put": {
+        "tags": [
+          "team"
+        ],
+        "summary": "Update a team.",
+        "operationId": "putTeam",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "name",
+                "teamColors"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "x-go-name": "Name"
+                },
+                "teamColors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "x-go-name": "TeamColors"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PutTeamResp",
+            "schema": {
+              "$ref": "#/definitions/PutTeamResp"
+            }
+          },
+          "400": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/teams": {
+      "get": {
+        "tags": [
+          "team"
+        ],
+        "summary": "Get all teams.",
+        "operationId": "getTeams",
+        "responses": {
+          "200": {
+            "description": "GetTeamsResp",
+            "schema": {
+              "$ref": "#/definitions/GetTeamsResp"
             }
           },
           "500": {
@@ -404,6 +537,19 @@
       },
       "x-go-package": "github.com/mellena1/boston-archery-api/handlers/seasons"
     },
+    "GetTeamsResp": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Team"
+          },
+          "x-go-name": "Data"
+        }
+      },
+      "x-go-package": "github.com/mellena1/boston-archery-api/handlers/teams"
+    },
     "Player": {
       "type": "object",
       "properties": {
@@ -440,6 +586,15 @@
       },
       "x-go-package": "github.com/mellena1/boston-archery-api/handlers/seasons"
     },
+    "PostTeamResp": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/Team"
+        }
+      },
+      "x-go-package": "github.com/mellena1/boston-archery-api/handlers/teams"
+    },
     "PutPlayerResp": {
       "type": "object",
       "properties": {
@@ -457,6 +612,15 @@
         }
       },
       "x-go-package": "github.com/mellena1/boston-archery-api/handlers/seasons"
+    },
+    "PutTeamResp": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/Team"
+        }
+      },
+      "x-go-package": "github.com/mellena1/boston-archery-api/handlers/teams"
     },
     "Season": {
       "type": "object",
@@ -486,6 +650,27 @@
         }
       },
       "x-go-package": "github.com/mellena1/boston-archery-api/handlers/seasons"
+    },
+    "Team": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "teamColors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "TeamColors"
+        }
+      },
+      "x-go-package": "github.com/mellena1/boston-archery-api/handlers/teams"
     }
   }
 }

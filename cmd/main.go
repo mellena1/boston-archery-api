@@ -33,6 +33,7 @@ import (
 	"github.com/mellena1/boston-archery-api/handlers/middleware"
 	"github.com/mellena1/boston-archery-api/handlers/players"
 	"github.com/mellena1/boston-archery-api/handlers/seasons"
+	"github.com/mellena1/boston-archery-api/handlers/teams"
 	"github.com/mellena1/boston-archery-api/logging"
 )
 
@@ -85,6 +86,7 @@ func init() {
 	adminGroup := apiV1Group.Group("", middleware.ParseJWTMiddleware(api.jwtParser), middleware.MustBeAdminMiddleware())
 
 	api.addPlayerAPIs(apiV1Group, adminGroup)
+	api.addTeamAPIs(apiV1Group, adminGroup)
 	api.addSeasonAPIs(apiV1Group, adminGroup)
 	api.addAuthAPIs(apiV1Group)
 
@@ -123,6 +125,19 @@ func (api *API) addPlayerAPIs(apiV1Group, adminGroup *gin.RouterGroup) {
 	playerAdminGroup := adminGroup.Group("/player")
 	{
 		playerAdminGroup.POST("", playerApi.PostPlayer)
+		playerAdminGroup.PUT("", playerApi.PutPlayer)
+	}
+}
+
+func (api *API) addTeamAPIs(apiV1Group, adminGroup *gin.RouterGroup) {
+	teamApi := teams.NewAPI(api.logger, api.db)
+
+	apiV1Group.GET("/teams", teamApi.GetTeams)
+
+	teamAdminGroup := adminGroup.Group("/team")
+	{
+		teamAdminGroup.POST("", teamApi.PostTeam)
+		teamAdminGroup.PUT("", teamApi.PutTeam)
 	}
 }
 
