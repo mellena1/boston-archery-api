@@ -18,13 +18,16 @@ func Test_CRUDPlayer(t *testing.T) {
 
 	defer resetTable(ctx)
 
+	_, err := db.GetPlayer(ctx, uuid.New())
+	require.ErrorIs(t, err, ErrItemNotFound, "getting non-existent player should fail")
+
 	id := uuid.New()
 	player := model.Player{
 		ID:        id,
 		FirstName: "Joe",
 		LastName:  "Burrow",
 	}
-	_, err := db.AddPlayer(ctx, player)
+	_, err = db.AddPlayer(ctx, player)
 	require.Nil(t, err, "add player should not fail")
 
 	fetchedPlayer, err := db.GetPlayer(ctx, id)
@@ -33,7 +36,7 @@ func Test_CRUDPlayer(t *testing.T) {
 	require.Equal(t, player, *fetchedPlayer)
 
 	_, err = db.AddPlayer(ctx, player)
-	require.Error(t, err, "trying to add player with existing UUID should fail")
+	require.ErrorIs(t, err, ErrItemAlreadyExists, "trying to add player with existing UUID should fail")
 
 	_, err = db.UpdatePlayer(ctx, id, UpdatePlayerInput{
 		FirstName: ptr.Ptr("Ja'Marr"),
@@ -53,7 +56,7 @@ func Test_CRUDPlayer(t *testing.T) {
 	_, err = db.UpdatePlayer(ctx, uuid.New(), UpdatePlayerInput{
 		FirstName: ptr.Ptr("John"),
 	})
-	require.Error(t, err, "trying to update non-existing player should fail")
+	require.ErrorIs(t, err, ErrItemNotFound, "trying to update non-existing player should fail")
 }
 
 func Test_GetAllPlayers(t *testing.T) {

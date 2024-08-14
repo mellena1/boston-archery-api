@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -59,6 +60,12 @@ func (db *DB) AddPlayer(ctx context.Context, newPlayer model.Player) (*model.Pla
 
 	err = db.putItem(ctx, dynamoItem, withPutItemConditionExpression(putExpr))
 	if err != nil {
+		var condCheckErr *types.ConditionalCheckFailedException
+		switch {
+		case errors.As(err, &condCheckErr):
+			return nil, ErrItemAlreadyExists
+		}
+
 		return nil, err
 	}
 
@@ -92,6 +99,12 @@ func (db *DB) UpdatePlayer(ctx context.Context, id uuid.UUID, updates UpdatePlay
 	key := playerPK(id.String())
 	result, err := db.updateItem(ctx, key, key, withUpdateExpression(expr), withUpdateReturnValues(types.ReturnValueAllNew))
 	if err != nil {
+		var condCheckErr *types.ConditionalCheckFailedException
+		switch {
+		case errors.As(err, &condCheckErr):
+			return nil, ErrItemNotFound
+		}
+
 		return nil, err
 	}
 
@@ -111,7 +124,7 @@ func (db *DB) GetPlayer(ctx context.Context, id uuid.UUID) (*model.Player, error
 	key := playerPK(id.String())
 	err := db.getItem(ctx, key, key, &playerItem)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get player %q: %w", id, err)
 	}
 
 	player := playerItem.toPlayer()
@@ -128,7 +141,7 @@ func (db *DB) GetAllPlayers(ctx context.Context) ([]model.Player, error) {
 	var playerItems []playerDynamoItem
 	err = db.getManyOfEntity(ctx, &playerItems, withQueryKeyConditionExpression(expr), withQueryIndex(tablekeys.GSI1_INDEX))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get all players: %w", err)
 	}
 
 	players := slices.Map(playerItems, func(item playerDynamoItem) model.Player {

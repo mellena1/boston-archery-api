@@ -18,13 +18,16 @@ func Test_CRUDTeam(t *testing.T) {
 
 	defer resetTable(ctx)
 
+	_, err := db.GetTeam(ctx, uuid.New())
+	require.ErrorIs(t, err, ErrItemNotFound, "getting non-found team should fail")
+
 	id := uuid.New()
 	team := model.Team{
 		ID:         id,
 		Name:       "Hold The Lime",
 		TeamColors: []string{"#32CD32", "#000000"},
 	}
-	_, err := db.AddTeam(ctx, team)
+	_, err = db.AddTeam(ctx, team)
 	require.Nil(t, err, "add team should not fail")
 
 	fetchedTeam, err := db.GetTeam(ctx, id)
@@ -33,7 +36,7 @@ func Test_CRUDTeam(t *testing.T) {
 	require.Equal(t, team, *fetchedTeam)
 
 	_, err = db.AddTeam(ctx, team)
-	require.Error(t, err, "trying to add team with existing UUID should fail")
+	require.ErrorIs(t, err, ErrItemAlreadyExists, "trying to add team with existing UUID should fail")
 
 	_, err = db.UpdateTeam(ctx, id, UpdateTeamInput{
 		Name:       ptr.Ptr("No Strings Attached"),
@@ -53,7 +56,7 @@ func Test_CRUDTeam(t *testing.T) {
 	_, err = db.UpdateTeam(ctx, uuid.New(), UpdateTeamInput{
 		Name: ptr.Ptr("Bowstars"),
 	})
-	require.Error(t, err, "trying to update non-existing team should fail")
+	require.ErrorIs(t, err, ErrItemNotFound, "trying to update non-existing team should fail")
 }
 
 func Test_GetAllTeams(t *testing.T) {

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -59,7 +60,13 @@ func (db *DB) AddTeam(ctx context.Context, newTeam model.Team) (*model.Team, err
 
 	err = db.putItem(ctx, dynamoItem, withPutItemConditionExpression(putExpr))
 	if err != nil {
-		return nil, err
+		var condCheckErr *types.ConditionalCheckFailedException
+		switch {
+		case errors.As(err, &condCheckErr):
+			return nil, ErrItemAlreadyExists
+		}
+
+		return nil, fmt.Errorf("failed to add team: %w", err)
 	}
 
 	return &newTeam, nil
@@ -92,7 +99,13 @@ func (db *DB) UpdateTeam(ctx context.Context, id uuid.UUID, updates UpdateTeamIn
 	key := teamPK(id.String())
 	result, err := db.updateItem(ctx, key, key, withUpdateExpression(expr), withUpdateReturnValues(types.ReturnValueAllNew))
 	if err != nil {
-		return nil, err
+		var condCheckErr *types.ConditionalCheckFailedException
+		switch {
+		case errors.As(err, &condCheckErr):
+			return nil, ErrItemNotFound
+		}
+
+		return nil, fmt.Errorf("failed to update team: %w", err)
 	}
 
 	var dynamoItem teamDynamoItem
@@ -111,7 +124,7 @@ func (db *DB) GetTeam(ctx context.Context, id uuid.UUID) (*model.Team, error) {
 	key := teamPK(id.String())
 	err := db.getItem(ctx, key, key, &teamItem)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get team %q: %w", id, err)
 	}
 
 	team := teamItem.toTeam()
@@ -128,7 +141,7 @@ func (db *DB) GetAllTeams(ctx context.Context) ([]model.Team, error) {
 	var teamItems []teamDynamoItem
 	err = db.getManyOfEntity(ctx, &teamItems, withQueryKeyConditionExpression(expr), withQueryIndex(tablekeys.GSI1_INDEX))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get all teams: %w", err)
 	}
 
 	teams := slices.Map(teamItems, func(item teamDynamoItem) model.Team {

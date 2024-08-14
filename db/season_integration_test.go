@@ -19,6 +19,9 @@ func Test_CRUDSeason(t *testing.T) {
 
 	defer resetTable(ctx)
 
+	_, err := db.GetSeason(ctx, uuid.New())
+	require.ErrorIs(t, err, ErrItemNotFound, "getting non-found season should fail")
+
 	id := uuid.New()
 	season := model.Season{
 		ID:        id,
@@ -27,7 +30,7 @@ func Test_CRUDSeason(t *testing.T) {
 		EndDate:   stringToDate("2024-10-30"),
 		ByeWeeks:  []time.Time{},
 	}
-	_, err := db.AddSeason(ctx, season)
+	_, err = db.AddSeason(ctx, season)
 	require.Nil(t, err, "add season should not fail")
 
 	fetchedSeason, err := db.GetSeason(ctx, id)
@@ -36,7 +39,7 @@ func Test_CRUDSeason(t *testing.T) {
 	require.Equal(t, season, *fetchedSeason)
 
 	_, err = db.AddSeason(ctx, season)
-	require.Error(t, err, "trying to add season with existing UUID should fail")
+	require.ErrorIs(t, err, ErrItemAlreadyExists, "trying to add season with existing UUID should fail")
 
 	_, err = db.UpdateSeason(ctx, id, UpdateSeasonInput{
 		Name:      ptr.Ptr("Winter 2024"),
@@ -62,7 +65,7 @@ func Test_CRUDSeason(t *testing.T) {
 	_, err = db.UpdateSeason(ctx, uuid.New(), UpdateSeasonInput{
 		Name: ptr.Ptr("Winter 2024"),
 	})
-	require.Error(t, err, "trying to update non-existing season should fail")
+	require.ErrorIs(t, err, ErrItemNotFound, "trying to update non-existing season should fail")
 }
 
 func Test_GetAllSeasons(t *testing.T) {

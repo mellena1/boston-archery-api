@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -60,7 +61,13 @@ func (db *DB) AddSeason(ctx context.Context, season model.Season) (*model.Season
 
 	err = db.putItem(ctx, seasonToDynamoItem(season), withPutItemConditionExpression(putExpr))
 	if err != nil {
-		return nil, err
+		var condCheckErr *types.ConditionalCheckFailedException
+		switch {
+		case errors.As(err, &condCheckErr):
+			return nil, ErrItemAlreadyExists
+		}
+
+		return nil, fmt.Errorf("failed to add season: %w", err)
 	}
 
 	return &season, nil
@@ -115,6 +122,12 @@ func (db *DB) UpdateSeason(ctx context.Context, id uuid.UUID, updates UpdateSeas
 
 	result, err := db.updateItem(ctx, seasonPK(id.String()), seasonPK(id.String()), withUpdateExpression(expr), withUpdateReturnValues(types.ReturnValueAllNew))
 	if err != nil {
+		var condCheckErr *types.ConditionalCheckFailedException
+		switch {
+		case errors.As(err, &condCheckErr):
+			return nil, ErrItemNotFound
+		}
+
 		return nil, fmt.Errorf("error updating season: %w", err)
 	}
 
@@ -128,19 +141,17 @@ func (db *DB) UpdateSeason(ctx context.Context, id uuid.UUID, updates UpdateSeas
 	return &seasonResult, nil
 }
 
-func (db *DB) GetSeason(ctx context.Context, uuid uuid.UUID) (*model.Season, error) {
+func (db *DB) GetSeason(ctx context.Context, id uuid.UUID) (*model.Season, error) {
 	var seasonItem seasonDynamoItem
 
-	key := seasonPK(uuid.String())
+	key := seasonPK(id.String())
 	err := db.getItem(ctx, key, key, &seasonItem)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get season %q: %w", id, err)
 	}
 
-	// TODO: error handling
-
 	season := seasonItem.toSeason()
-	return &season, err
+	return &season, nil
 }
 
 func (db *DB) GetAllSeasons(ctx context.Context) ([]model.Season, error) {
@@ -153,7 +164,7 @@ func (db *DB) GetAllSeasons(ctx context.Context) ([]model.Season, error) {
 	var seasonItems []seasonDynamoItem
 	err = db.getManyOfEntity(ctx, &seasonItems, withQueryKeyConditionExpression(expr), withQueryIndex(tablekeys.GSI1_INDEX))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get all seasons: %w", err)
 	}
 
 	seasons := slices.Map(seasonItems, func(item seasonDynamoItem) model.Season {
