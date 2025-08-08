@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	captainRoleID      = "1031944371026800691"
+	captainRoleID      = "1283916046864089149"
 	guildMemberInfoURL = "https://discord.com/api/users/@me/guilds/1031942797105823745/member"
 
 	jwtCookieKey = "authToken"
